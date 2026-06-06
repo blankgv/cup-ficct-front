@@ -20,7 +20,19 @@ Toda la configuración vive en `.env` (no se versiona). Copiá `.env.example` y 
 NEXT_PUBLIC_API_URL=http://localhost:8000/api
 ```
 
-`NEXT_PUBLIC_API_URL` es la URL base de la API e incluye el sufijo `/api`.
+`NEXT_PUBLIC_API_URL` es la **única** variable: la URL base de la API (incluye `/api`).
+La usan tanto el navegador como el server de Next (proxy de fotos `/api/foto/...`),
+así que debe ser alcanzable desde el **host** (el navegador nunca resuelve nombres de
+servicio de Docker). Valores según cómo corras:
+
+| Entorno | NEXT_PUBLIC_API_URL |
+| --- | --- |
+| `npm run dev` (todo en el host) | `http://localhost:8000/api` |
+| Docker (backend con puerto publicado, escuchando `0.0.0.0`) | `http://host.docker.internal:8000/api` |
+| Backend público / producción | `https://cup-ficct-backend.onrender.com/api` |
+
+La foto de perfil llega vía 302 a una URL firmada de R2 sin CORS; el proxy la resuelve
+en el servidor y la sirve al mismo origen para usarla como `src` de imagen.
 
 ## Desarrollo local
 
@@ -38,6 +50,23 @@ docker compose up --build
 ```
 
 Levanta el frontend en el puerto `3000` leyendo `.env`.
+
+## Despliegue
+
+El backend de producción vive en `https://cup-ficct-backend.onrender.com`.
+
+1. Definí las variables en la plataforma (Render/Vercel). `NEXT_PUBLIC_API_URL` es
+   **build-time**, así que debe estar disponible al construir:
+
+   ```
+   NEXT_PUBLIC_API_URL=https://cup-ficct-backend.onrender.com/api
+   ```
+
+   En local podés usar `.env.production` (no se versiona) para un build de producción
+   con `npm run build && npm run start`.
+
+2. En el **backend**, agregá el dominio del frontend desplegado a `CORS_ALLOWED_ORIGINS`
+   (o `FRONTEND_URL`); si no, el navegador bloquea las llamadas por CORS.
 
 ## Estructura
 

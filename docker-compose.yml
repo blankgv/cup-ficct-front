@@ -1,0 +1,16 @@
+services:
+  frontend:
+    build:
+      context: .
+      args:
+        # Tomado de .env (docker compose lo sustituye automáticamente).
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    image: cup-ficct-frontend
+    container_name: cup-ficct-frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    restart: unless-stopped

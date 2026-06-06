@@ -1,17 +1,23 @@
-import Link from "next/link";
+"use client";
 
-// Landing mínima. La redirección por sesión se agrega al cablear el store de auth.
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { FullScreenLoader } from "@/components/ui/Spinner";
+
+// Punto de entrada: enruta según la sesión.
 export default function HomePage() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-8">
-      <h1 className="text-2xl font-semibold">CUP-FICCT</h1>
-      <p className="text-slate-600">Sistema de autenticación.</p>
-      <Link
-        href="/login"
-        className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-      >
-        Ingresar
-      </Link>
-    </main>
-  );
+  const router = useRouter();
+  const { initialized, isAuthenticated, user } = useAuth();
+
+  useEffect(() => {
+    if (!initialized) return;
+    if (!isAuthenticated) {
+      router.replace("/login");
+      return;
+    }
+    router.replace(user?.must_change_password ? "/change-password" : "/dashboard");
+  }, [initialized, isAuthenticated, user, router]);
+
+  return <FullScreenLoader />;
 }

@@ -1,4 +1,4 @@
-import { api } from "@/lib/api";
+import { api, fetchFotoObjectUrl } from "@/lib/api";
 import type {
   ChangePasswordPayload,
   DataResponse,
@@ -79,11 +79,8 @@ export async function uploadMyFoto(file: File): Promise<User> {
   return data.data;
 }
 
-// La foto requiere Bearer y responde 302 hacia una URL firmada.
-// Axios sigue la redirección y devuelve el binario; lo convertimos en object URL.
-export async function fetchMyFotoUrl(): Promise<string> {
-  const { data } = await api.get<Blob>("/auth/me/foto", {
-    responseType: "blob",
-  });
-  return URL.createObjectURL(data);
+// La foto requiere Bearer y responde 302 hacia una URL firmada de R2 (sin CORS).
+// Se descarga vía el proxy same-origin de Next para evitar el bloqueo del navegador.
+export function fetchMyFotoUrl(): Promise<string> {
+  return fetchFotoObjectUrl("/api/foto/me");
 }

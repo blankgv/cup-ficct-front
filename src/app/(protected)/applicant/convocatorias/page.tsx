@@ -1,11 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { RequirePermission } from "@/components/RequirePermission";
 import { EntityManager } from "@/components/academic/EntityManager";
+import { Button } from "@/components/ui/Button";
 import { Field, SelectInput, TextInput } from "@/components/ui/Field";
+import { ProcesosModal } from "@/components/applicant/ProcesosModal";
+import { useCan } from "@/hooks/useAuth";
 import { convocatoriasService } from "@/services/applicant/convocatorias.service";
 import {
+  APPLICANT_ASSIGN,
   APPLICANT_MANAGE,
   ESTADOS_CONVOCATORIA,
   type Convocatoria,
@@ -28,9 +33,12 @@ const EMPTY: Form = {
   estado: "ABIERTA",
 };
 
-export default function ConvocatoriasPage() {
+function ConvocatoriasContent() {
+  const canAssign = useCan(APPLICANT_ASSIGN);
+  const [procesos, setProcesos] = useState<Convocatoria | null>(null);
+
   return (
-    <RequirePermission permission={APPLICANT_MANAGE}>
+    <>
       <EntityManager<Convocatoria, Form>
         title="Convocatorias"
         description="Convocatorias de admisión (estado, fechas y cupos por carrera)."
@@ -70,12 +78,19 @@ export default function ConvocatoriasPage() {
         remove={(row) => convocatoriasService.remove(row.id)}
         describe={(c) => `${c.nombre} (${c.gestion})`}
         rowActions={(c) => (
-          <Link
-            href={`/applicant/convocatorias/${c.id}/cupos`}
-            className="inline-flex items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50"
-          >
-            Cupos
-          </Link>
+          <>
+            <Link
+              href={`/applicant/convocatorias/${c.id}/cupos`}
+              className="inline-flex items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50"
+            >
+              Cupos
+            </Link>
+            {canAssign && (
+              <Button variant="secondary" onClick={() => setProcesos(c)}>
+                Procesos
+              </Button>
+            )}
+          </>
         )}
         renderForm={({ values, set, fieldError }) => (
           <>
@@ -130,6 +145,18 @@ export default function ConvocatoriasPage() {
           </>
         )}
       />
+
+      {procesos && (
+        <ProcesosModal convocatoria={procesos} onClose={() => setProcesos(null)} />
+      )}
+    </>
+  );
+}
+
+export default function ConvocatoriasPage() {
+  return (
+    <RequirePermission permission={APPLICANT_MANAGE}>
+      <ConvocatoriasContent />
     </RequirePermission>
   );
 }

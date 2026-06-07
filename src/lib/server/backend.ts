@@ -1,12 +1,10 @@
 // Utilidades de servidor (route handlers). No usar en el cliente.
 
-// URL base de la API vista desde el servidor de Next.
-// En local coincide con NEXT_PUBLIC_API_URL; en Docker, el contenedor no puede
-// usar "localhost", por eso se permite override con BACKEND_INTERNAL_URL.
+// URL base de la API (única variable, server y cliente).
 export function backendBaseUrl(): string {
-  const url = process.env.BACKEND_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL;
+  const url = process.env.NEXT_PUBLIC_API_URL;
   if (!url) {
-    throw new Error("NEXT_PUBLIC_API_URL / BACKEND_INTERNAL_URL no configurada");
+    throw new Error("NEXT_PUBLIC_API_URL no configurada");
   }
   return url.replace(/\/$/, "");
 }

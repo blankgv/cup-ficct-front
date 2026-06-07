@@ -10,6 +10,10 @@ import { Field, SelectInput, TextInput } from "@/components/ui/Field";
 import { useGrupoRoster } from "@/hooks/useGrupoRoster";
 import { getErrorMessage, getValidationErrors } from "@/lib/api";
 import { notasService } from "@/services/evaluation/notas.service";
+import {
+  NotaIndividualModal,
+  type NotaPrefill,
+} from "@/components/evaluation/NotaIndividualModal";
 import { GRADE_MANAGE, type CargaResumen } from "@/lib/evaluation";
 
 function PlanillaNotasContent() {
@@ -33,6 +37,7 @@ function PlanillaNotasContent() {
   const [resumen, setResumen] = useState<CargaResumen | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [fieldErr, setFieldErr] = useState<Record<string, string[]>>({});
+  const [individual, setIndividual] = useState<NotaPrefill | null>(null);
 
   const canSubmit = useMemo(
     () => Boolean(grupo && materia && numero && roster.length > 0),
@@ -79,6 +84,11 @@ function PlanillaNotasContent() {
       <PageHeader
         title="Planilla de notas"
         description="Cargá notas (0–100) por grupo, materia y nº de examen. La carga es upsert: vuelve a cargar pisa el valor anterior."
+        actions={
+          <Button variant="secondary" onClick={() => setIndividual({})}>
+            Nota individual
+          </Button>
+        }
       />
 
       <Card className="mb-4">
@@ -154,6 +164,7 @@ function PlanillaNotasContent() {
                   <th className="px-4 py-3">Documento</th>
                   <th className="px-4 py-3">Estudiante</th>
                   <th className="px-4 py-3">Nota (0–100)</th>
+                  <th className="px-4 py-3 text-right">Acción</th>
                 </tr>
               </thead>
               <tbody>
@@ -171,6 +182,21 @@ function PlanillaNotasContent() {
                         onChange={(e) => setValor(r.documento, e.target.value)}
                       />
                     </td>
+                    <td className="px-4 py-3 text-right">
+                      <Button
+                        variant="secondary"
+                        onClick={() =>
+                          setIndividual({
+                            documento: r.documento,
+                            materia,
+                            numero,
+                            valor: valores[r.documento] ?? "",
+                          })
+                        }
+                      >
+                        Editar puntual
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -184,6 +210,14 @@ function PlanillaNotasContent() {
           Guardar notas
         </Button>
       </div>
+
+      {individual && (
+        <NotaIndividualModal
+          prefill={individual}
+          onClose={() => setIndividual(null)}
+          onSaved={() => undefined}
+        />
+      )}
     </div>
   );
 }

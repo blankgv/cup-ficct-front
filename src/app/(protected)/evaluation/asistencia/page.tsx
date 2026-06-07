@@ -11,6 +11,10 @@ import { useGrupoRoster } from "@/hooks/useGrupoRoster";
 import { getErrorMessage, getValidationErrors } from "@/lib/api";
 import { asistenciasService } from "@/services/evaluation/asistencias.service";
 import {
+  AsistenciaIndividualModal,
+  type AsistenciaPrefill,
+} from "@/components/evaluation/AsistenciaIndividualModal";
+import {
   ATTENDANCE_MANAGE,
   ESTADOS_ASISTENCIA,
   type CargaResumen,
@@ -39,6 +43,7 @@ function PlanillaAsistenciaContent() {
   const [resumen, setResumen] = useState<CargaResumen | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [fieldErr, setFieldErr] = useState<Record<string, string[]>>({});
+  const [individual, setIndividual] = useState<AsistenciaPrefill | null>(null);
 
   const canSubmit = useMemo(
     () => Boolean(grupo && materia && fecha && roster.length > 0),
@@ -76,6 +81,11 @@ function PlanillaAsistenciaContent() {
       <PageHeader
         title="Planilla de asistencia"
         description="Registrá asistencia por grupo, materia y fecha. JUSTIFICADO cuenta como asistido. La carga es upsert."
+        actions={
+          <Button variant="secondary" onClick={() => setIndividual({})}>
+            Asistencia individual
+          </Button>
+        }
       />
 
       <Card className="mb-4">
@@ -150,6 +160,7 @@ function PlanillaAsistenciaContent() {
                   <th className="px-4 py-3">Documento</th>
                   <th className="px-4 py-3">Estudiante</th>
                   <th className="px-4 py-3">Estado</th>
+                  <th className="px-4 py-3 text-right">Acción</th>
                 </tr>
               </thead>
               <tbody>
@@ -175,6 +186,21 @@ function PlanillaAsistenciaContent() {
                         ))}
                       </SelectInput>
                     </td>
+                    <td className="px-4 py-3 text-right">
+                      <Button
+                        variant="secondary"
+                        onClick={() =>
+                          setIndividual({
+                            documento: r.documento,
+                            materia,
+                            fecha,
+                            estado: estadoDe(r.documento),
+                          })
+                        }
+                      >
+                        Registrar puntual
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -188,6 +214,14 @@ function PlanillaAsistenciaContent() {
           Guardar asistencia
         </Button>
       </div>
+
+      {individual && (
+        <AsistenciaIndividualModal
+          prefill={individual}
+          onClose={() => setIndividual(null)}
+          onSaved={() => undefined}
+        />
+      )}
     </div>
   );
 }

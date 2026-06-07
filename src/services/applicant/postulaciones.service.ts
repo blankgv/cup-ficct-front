@@ -1,6 +1,6 @@
 import { api } from "@/lib/api";
 import type { DataResponse, MessageResponse, Paginated } from "@/lib/types";
-import type { Postulacion } from "@/lib/applicant";
+import type { Postulacion, TurnoPreferencia } from "@/lib/applicant";
 import { APPLICANT_BASE } from "./postulantes.service";
 
 function base(documento: string): string {
@@ -33,5 +33,17 @@ export const postulacionesService = {
       `${base(documento)}/${convocatoriaId}`,
     );
     return data;
+  },
+  // Preferencia de turno (MANANA/TARDE) usada en la asignación de grupo.
+  async setTurno(
+    documento: string,
+    convocatoriaId: number,
+    turno: TurnoPreferencia,
+  ): Promise<Postulacion> {
+    const { data } = await api.put<DataResponse<Postulacion>>(
+      `${base(documento)}/${convocatoriaId}/turno`,
+      { turno },
+    );
+    return data.data;
   },
 };

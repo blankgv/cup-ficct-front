@@ -46,6 +46,24 @@ docker compose up --build
 
 Levanta el frontend en el puerto `3000` leyendo `.env`.
 
+## Despliegue
+
+El backend de producción vive en `https://cup-ficct-backend.onrender.com`.
+
+1. Definí las variables en la plataforma (Render/Vercel). `NEXT_PUBLIC_API_URL` es
+   **build-time**, así que debe estar disponible al construir:
+
+   ```
+   NEXT_PUBLIC_API_URL=https://cup-ficct-backend.onrender.com/api
+   BACKEND_INTERNAL_URL=https://cup-ficct-backend.onrender.com/api
+   ```
+
+   En local podés usar `.env.production` (no se versiona) para un build de producción
+   con `npm run build && npm run start`.
+
+2. En el **backend**, agregá el dominio del frontend desplegado a `CORS_ALLOWED_ORIGINS`
+   (o `FRONTEND_URL`); si no, el navegador bloquea las llamadas por CORS.
+
 ## Estructura
 
 ```

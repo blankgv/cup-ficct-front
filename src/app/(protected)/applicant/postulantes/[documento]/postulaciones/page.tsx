@@ -9,13 +9,15 @@ import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Spinner } from "@/components/ui/Spinner";
-import { Field, SelectInput } from "@/components/ui/Field";
+import { Field, SelectInput, TextArea } from "@/components/ui/Field";
+import { useCan } from "@/hooks/useAuth";
 import { getErrorMessage, getValidationErrors } from "@/lib/api";
 import { postulacionesService } from "@/services/applicant/postulaciones.service";
 import { convocatoriasService } from "@/services/applicant/convocatorias.service";
 import { cuposService } from "@/services/applicant/cupos.service";
 import {
   APPLICANT_MANAGE,
+  APPLICANT_VERIFY,
   TURNOS_PREFERENCIA,
   type CarreraCupo,
   type Convocatoria,
@@ -247,7 +249,71 @@ function TurnoModal({
   );
 }
 
+function RechazarModal({
+  documento,
+  postulacion,
+  onClose,
+  onDone,
+}: {
+  documento: string;
+  postulacion: Postulacion;
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const [motivo, setMotivo] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fieldErr, setFieldErr] = useState<string | undefined>();
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!motivo.trim()) {
+      setFieldErr("El motivo es obligatorio.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    setFieldErr(undefined);
+    try {
+      await postulacionesService.rechazar(documento, postulacion.convocatoria_id, motivo);
+      onDone();
+    } catch (e) {
+      const v = getValidationErrors(e);
+      if (v?.motivo) setFieldErr(v.motivo[0]);
+      else setError(getErrorMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Modal open onClose={onClose} title="Rechazar postulación">
+      <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
+        {error && <Alert variant="error">{error}</Alert>}
+        <Field label="Motivo del rechazo" error={fieldErr}>
+          <TextArea
+            rows={3}
+            value={motivo}
+            onChange={(e) => setMotivo(e.target.value)}
+            invalid={Boolean(fieldErr)}
+            required
+          />
+        </Field>
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" variant="danger" loading={busy}>
+            Rechazar
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
 function PostulacionesContent({ documento }: { documento: string }) {
+  const canVerify = useCan(APPLICANT_VERIFY);
   const [rows, setRows] = useState<Postulacion[]>([]);
   const [convocatorias, setConvocatorias] = useState<Convocatoria[]>([]);
   const [loading, setLoading] = useState(true);
@@ -255,7 +321,9 @@ function PostulacionesContent({ documento }: { documento: string }) {
   const [actError, setActError] = useState<string | null>(null);
   const [nueva, setNueva] = useState(false);
   const [turnoFor, setTurnoFor] = useState<Postulacion | null>(null);
+  const [rechazarFor, setRechazarFor] = useState<Postulacion | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [verifyingId, setVerifyingId] = useState<number | null>(null);
 
   const convName = useCallback(
     (id: number) => convocatorias.find((c) => c.id === id)?.nombre ?? `#${id}`,
@@ -293,6 +361,19 @@ function PostulacionesContent({ documento }: { documento: string }) {
       setActError(getErrorMessage(e));
     } finally {
       setBusyId(null);
+    }
+  }
+
+  async function verificar(convocatoriaId: number) {
+    setActError(null);
+    setVerifyingId(convocatoriaId);
+    try {
+      await postulacionesService.verificar(documento, convocatoriaId);
+      await load();
+    } catch (e) {
+      setActError(getErrorMessage(e));
+    } finally {
+      setVerifyingId(null);
     }
   }
 
@@ -359,6 +440,23 @@ function PostulacionesContent({ documento }: { documento: string }) {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap justify-end gap-2">
+                        {canVerify && p.estado === "PENDIENTE" && (
+                          <>
+                            <Button
+                              variant="secondary"
+                              loading={verifyingId === p.convocatoria_id}
+                              onClick={() => verificar(p.convocatoria_id)}
+                            >
+                              Verificar
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              onClick={() => setRechazarFor(p)}
+                            >
+                              Rechazar
+                            </Button>
+                          </>
+                        )}
                         <Button variant="secondary" onClick={() => setTurnoFor(p)}>
                           Turno
                         </Button>
@@ -398,6 +496,18 @@ function PostulacionesContent({ documento }: { documento: string }) {
           onClose={() => setTurnoFor(null)}
           onDone={() => {
             setTurnoFor(null);
+            void load();
+          }}
+        />
+      )}
+
+      {rechazarFor && (
+        <RechazarModal
+          documento={documento}
+          postulacion={rechazarFor}
+          onClose={() => setRechazarFor(null)}
+          onDone={() => {
+            setRechazarFor(null);
             void load();
           }}
         />

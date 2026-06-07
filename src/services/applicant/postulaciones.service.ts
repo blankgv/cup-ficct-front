@@ -34,6 +34,24 @@ export const postulacionesService = {
     );
     return data;
   },
+  // Verificación (permiso applicant.verify).
+  async verificar(documento: string, convocatoriaId: number): Promise<Postulacion> {
+    const { data } = await api.put<DataResponse<Postulacion>>(
+      `${base(documento)}/${convocatoriaId}/verificar`,
+    );
+    return data.data;
+  },
+  async rechazar(
+    documento: string,
+    convocatoriaId: number,
+    motivo: string,
+  ): Promise<Postulacion> {
+    const { data } = await api.put<DataResponse<Postulacion>>(
+      `${base(documento)}/${convocatoriaId}/rechazar`,
+      { motivo },
+    );
+    return data.data;
+  },
   // Preferencia de turno (MANANA/TARDE) usada en la asignación de grupo.
   async setTurno(
     documento: string,

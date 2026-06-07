@@ -6,6 +6,7 @@ import * as usersService from "@/services/users.service";
 import { getErrorMessage } from "@/lib/api";
 import type { CreateUserPayload, UpdateUserPayload, User } from "@/lib/types";
 import { RequirePermission } from "@/components/RequirePermission";
+import { UserAvatar } from "@/components/UserAvatar";
 import { Card, PageHeader } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
@@ -135,9 +136,11 @@ function UsuariosContent() {
                   <tr key={user.id} className="border-b border-slate-100">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-500">
-                          {(user.username ?? user.email).charAt(0).toUpperCase()}
-                        </span>
+                        <UserAvatar
+                          proxyPath={`/api/foto/users/${user.id}`}
+                          hasFoto={Boolean(user.foto_perfil_path)}
+                          name={user.username ?? user.email}
+                        />
                         <div>
                           <p className="font-medium text-slate-900">
                             {user.username ?? "—"}

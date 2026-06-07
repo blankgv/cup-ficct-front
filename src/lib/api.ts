@@ -129,3 +129,17 @@ export function getErrorMessage(
 export function isForbidden(error: unknown): boolean {
   return axios.isAxiosError(error) && error.response?.status === 403;
 }
+
+// Descarga una foto a través del proxy same-origin de Next (evita el CORS de R2)
+// y devuelve un object URL listo para usar como src de imagen.
+export async function fetchFotoObjectUrl(proxyPath: string): Promise<string> {
+  const headers: Record<string, string> = {};
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+  const res = await fetch(proxyPath, { headers, cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`No se pudo cargar la foto (${res.status}).`);
+  }
+  return URL.createObjectURL(await res.blob());
+}

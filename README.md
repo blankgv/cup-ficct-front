@@ -22,6 +22,13 @@ NEXT_PUBLIC_API_URL=http://localhost:8000/api
 
 `NEXT_PUBLIC_API_URL` es la URL base de la API e incluye el sufijo `/api`.
 
+`BACKEND_INTERNAL_URL` (opcional) es la URL de la API vista **desde el servidor de
+Next**, usada por el proxy de fotos (`/api/foto/...`). En local no hace falta. En
+Docker, como el contenedor no resuelve `localhost`, conviene apuntarla al host, p.ej.
+`http://host.docker.internal:8000/api`. La foto de perfil llega vía 302 a una URL
+firmada de R2 sin CORS; el proxy la resuelve en el servidor y la sirve al mismo
+origen para que se pueda usar como `src` de imagen.
+
 ## Desarrollo local
 
 ```bash

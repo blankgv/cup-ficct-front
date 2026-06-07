@@ -13,4 +13,6 @@ services:
       - .env
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      # URL de la API en tiempo de ejecución para el proxy de fotos (server-side).
+      BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:-${NEXT_PUBLIC_API_URL}}
     restart: unless-stopped

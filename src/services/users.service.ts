@@ -1,4 +1,4 @@
-import { api } from "@/lib/api";
+import { api, fetchFotoObjectUrl } from "@/lib/api";
 import type {
   CreateUserPayload,
   DataResponse,
@@ -49,9 +49,6 @@ export async function uploadUserFoto(id: number, file: File): Promise<User> {
   return data.data;
 }
 
-export async function fetchUserFotoUrl(id: number): Promise<string> {
-  const { data } = await api.get<Blob>(`/auth/users/${id}/foto`, {
-    responseType: "blob",
-  });
-  return URL.createObjectURL(data);
+export function fetchUserFotoUrl(id: number): Promise<string> {
+  return fetchFotoObjectUrl(`/api/foto/users/${id}`);
 }

@@ -6,6 +6,7 @@ import { EntityManager } from "@/components/academic/EntityManager";
 import { Field, TextInput } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { CargaMasivaModal } from "@/components/applicant/CargaMasivaModal";
+import { TituloModal } from "@/components/applicant/TituloModal";
 import { postulantesService } from "@/services/applicant/postulantes.service";
 import { APPLICANT_MANAGE, type Postulante } from "@/lib/applicant";
 
@@ -33,7 +34,8 @@ const EMPTY: Form = {
 
 function PostulantesContent() {
   const [carga, setCarga] = useState(false);
-  // Remontar la tabla tras una carga masiva para refrescar los datos.
+  const [titulo, setTitulo] = useState<Postulante | null>(null);
+  // Remontar la tabla tras una carga masiva / subida de título para refrescar.
   const [reloadKey, setReloadKey] = useState(0);
 
   return (
@@ -98,6 +100,11 @@ function PostulantesContent() {
         }
         remove={(row) => postulantesService.remove(row.documento)}
         describe={(p) => `${p.nombres} ${p.apellidos} (${p.documento})`}
+        rowActions={(p) => (
+          <Button variant="secondary" onClick={() => setTitulo(p)}>
+            Título
+          </Button>
+        )}
         renderForm={({ values, set, fieldError, editing }) => (
           <>
             <Field label="Documento" error={fieldError("documento")}>
@@ -177,6 +184,14 @@ function PostulantesContent() {
             setCarga(false);
             setReloadKey((k) => k + 1);
           }}
+        />
+      )}
+
+      {titulo && (
+        <TituloModal
+          postulante={titulo}
+          onClose={() => setTitulo(null)}
+          onDone={() => setReloadKey((k) => k + 1)}
         />
       )}
     </>

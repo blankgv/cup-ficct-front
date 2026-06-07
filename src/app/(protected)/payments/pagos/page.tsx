@@ -10,6 +10,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Spinner } from "@/components/ui/Spinner";
 import { Field, SelectInput } from "@/components/ui/Field";
 import { EstadoPagoBadge } from "@/components/payments/EstadoPagoBadge";
+import { PagoFormModal } from "@/components/payments/PagoFormModal";
 import { getErrorMessage } from "@/lib/api";
 import { pagosService, type PagosFilter } from "@/services/payments/pagos.service";
 import { convocatoriasService } from "@/services/applicant/convocatorias.service";
@@ -30,6 +31,8 @@ function PagosContent() {
   const [deleting, setDeleting] = useState<Pago | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  // form modal: undefined = cerrado, null = nuevo, Pago = editar.
+  const [form, setForm] = useState<Pago | null | undefined>(undefined);
 
   const convName = useMemo(
     () => (id: number) => convocatorias.find((c) => c.id === id)?.nombre ?? `#${id}`,
@@ -80,6 +83,7 @@ function PagosContent() {
       <PageHeader
         title="Pagos"
         description="Gestión de pagos: filtrá por postulante y convocatoria."
+        actions={<Button onClick={() => setForm(null)}>Nuevo pago</Button>}
       />
 
       <Card className="mb-4">
@@ -169,6 +173,9 @@ function PagosContent() {
                         >
                           Detalle
                         </Link>
+                        <Button variant="secondary" onClick={() => setForm(p)}>
+                          Editar
+                        </Button>
                         <Button variant="danger" onClick={() => setDeleting(p)}>
                           Eliminar
                         </Button>
@@ -181,6 +188,19 @@ function PagosContent() {
           </div>
         )}
       </Card>
+
+      {form !== undefined && (
+        <PagoFormModal
+          pago={form}
+          postulantes={postulantes}
+          convocatorias={convocatorias}
+          onClose={() => setForm(undefined)}
+          onSaved={() => {
+            setForm(undefined);
+            void load();
+          }}
+        />
+      )}
 
       {deleting && (
         <Modal open onClose={() => setDeleting(null)} title="Eliminar pago">

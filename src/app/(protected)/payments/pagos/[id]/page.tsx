@@ -10,6 +10,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Spinner } from "@/components/ui/Spinner";
 import { Field, TextArea } from "@/components/ui/Field";
 import { EstadoPagoBadge } from "@/components/payments/EstadoPagoBadge";
+import { ComprobantesSection } from "@/components/payments/ComprobantesSection";
 import { useCan } from "@/hooks/useAuth";
 import { getErrorMessage, getValidationErrors } from "@/lib/api";
 import { pagosService } from "@/services/payments/pagos.service";
@@ -199,6 +200,8 @@ function PagoDetalleContent({ id }: { id: number }) {
           )}
         </Card>
       ) : null}
+
+      {pago && <ComprobantesSection pagoId={pago.id} isStaff={isStaff} />}
 
       {rechazando && pago && (
         <RechazarModal

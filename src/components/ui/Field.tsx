@@ -1,4 +1,8 @@
-import type { InputHTMLAttributes, ReactNode } from "react";
+import type {
+  InputHTMLAttributes,
+  ReactNode,
+  SelectHTMLAttributes,
+} from "react";
 
 interface FieldProps {
   label: string;
@@ -32,5 +36,27 @@ export function TextInput({ invalid = false, className = "", ...props }: TextInp
         invalid ? "border-red-400" : "border-slate-300"
       } ${className}`}
     />
+  );
+}
+
+interface SelectInputProps extends SelectHTMLAttributes<HTMLSelectElement> {
+  invalid?: boolean;
+}
+
+export function SelectInput({
+  invalid = false,
+  className = "",
+  children,
+  ...props
+}: SelectInputProps) {
+  return (
+    <select
+      {...props}
+      className={`w-full rounded-md border bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100 ${
+        invalid ? "border-red-400" : "border-slate-300"
+      } ${className}`}
+    >
+      {children}
+    </select>
   );
 }

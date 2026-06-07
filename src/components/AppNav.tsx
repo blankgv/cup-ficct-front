@@ -19,6 +19,8 @@ interface NavSection {
 
 const ACADEMIC_PERMISSION = "academic.manage";
 const APPLICANT_PERMISSION = "applicant.manage";
+const GRADE_PERMISSION = "grade.manage";
+const ATTENDANCE_PERMISSION = "attendance.manage";
 
 const NAV_SECTIONS: NavSection[] = [
   {
@@ -47,6 +49,15 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: "/applicant/postulantes", label: "Postulantes", permission: APPLICANT_PERMISSION },
       { href: "/applicant/convocatorias", label: "Convocatorias", permission: APPLICANT_PERMISSION },
+    ],
+  },
+  {
+    title: "Evaluación",
+    items: [
+      { href: "/evaluation/notas", label: "Planilla de notas", permission: GRADE_PERMISSION },
+      { href: "/evaluation/boletin", label: "Boletín", permission: GRADE_PERMISSION },
+      { href: "/evaluation/asistencia", label: "Planilla de asistencia", permission: ATTENDANCE_PERMISSION },
+      { href: "/evaluation/reporte-asistencia", label: "Reporte de asistencia", permission: ATTENDANCE_PERMISSION },
     ],
   },
 ];

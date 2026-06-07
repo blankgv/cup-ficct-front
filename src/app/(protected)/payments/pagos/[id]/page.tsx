@@ -8,13 +8,13 @@ import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Spinner } from "@/components/ui/Spinner";
-import { Field, TextArea } from "@/components/ui/Field";
+import { Field, SelectInput, TextArea } from "@/components/ui/Field";
 import { EstadoPagoBadge } from "@/components/payments/EstadoPagoBadge";
 import { ComprobantesSection } from "@/components/payments/ComprobantesSection";
 import { useCan } from "@/hooks/useAuth";
 import { getErrorMessage, getValidationErrors } from "@/lib/api";
 import { pagosService } from "@/services/payments/pagos.service";
-import { PAYMENT_MANAGE, type Pago } from "@/lib/payments";
+import { GATEWAYS, PAYMENT_MANAGE, type Gateway, type Pago } from "@/lib/payments";
 
 function RechazarModal({
   id,
@@ -94,6 +94,9 @@ function PagoDetalleContent({ id }: { id: number }) {
   const [actError, setActError] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [rechazando, setRechazando] = useState(false);
+  const [gateway, setGateway] = useState<Gateway>("stripe");
+  const [checkoutBusy, setCheckoutBusy] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -120,6 +123,18 @@ function PagoDetalleContent({ id }: { id: number }) {
       setActError(getErrorMessage(e));
     } finally {
       setConfirming(false);
+    }
+  }
+
+  async function pagar() {
+    setCheckoutError(null);
+    setCheckoutBusy(true);
+    try {
+      const url = await pagosService.checkout(id, gateway);
+      window.location.href = url;
+    } catch (e) {
+      setCheckoutError(getErrorMessage(e));
+      setCheckoutBusy(false);
     }
   }
 
@@ -200,6 +215,39 @@ function PagoDetalleContent({ id }: { id: number }) {
           )}
         </Card>
       ) : null}
+
+      {pago && pago.estado === "PENDIENTE" && (
+        <Card className="mt-4">
+          <h2 className="mb-3 text-sm font-semibold text-slate-700">Pagar en línea</h2>
+          {checkoutError && (
+            <div className="mb-3">
+              <Alert variant="error">{checkoutError}</Alert>
+            </div>
+          )}
+          <div className="flex flex-wrap items-end gap-3">
+            <Field label="Pasarela">
+              <SelectInput
+                className="max-w-44"
+                value={gateway}
+                onChange={(e) => setGateway(e.target.value as Gateway)}
+              >
+                {GATEWAYS.map((g) => (
+                  <option key={g} value={g}>
+                    {g}
+                  </option>
+                ))}
+              </SelectInput>
+            </Field>
+            <Button onClick={pagar} loading={checkoutBusy}>
+              Pagar con tarjeta
+            </Button>
+          </div>
+          <p className="mt-2 text-xs text-slate-500">
+            Te redirige al checkout seguro de la pasarela. Tarjeta de prueba Stripe: 4242
+            4242 4242 4242.
+          </p>
+        </Card>
+      )}
 
       {pago && <ComprobantesSection pagoId={pago.id} isStaff={isStaff} />}
 

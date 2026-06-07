@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { RequirePermission } from "@/components/RequirePermission";
 import { EntityManager } from "@/components/academic/EntityManager";
@@ -101,9 +102,17 @@ function PostulantesContent() {
         remove={(row) => postulantesService.remove(row.documento)}
         describe={(p) => `${p.nombres} ${p.apellidos} (${p.documento})`}
         rowActions={(p) => (
-          <Button variant="secondary" onClick={() => setTitulo(p)}>
-            Título
-          </Button>
+          <>
+            <Link
+              href={`/applicant/postulantes/${p.documento}/postulaciones`}
+              className="inline-flex items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50"
+            >
+              Postulaciones
+            </Link>
+            <Button variant="secondary" onClick={() => setTitulo(p)}>
+              Título
+            </Button>
+          </>
         )}
         renderForm={({ values, set, fieldError, editing }) => (
           <>

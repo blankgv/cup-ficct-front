@@ -1,0 +1,156 @@
+"use client";
+
+import { RequirePermission } from "@/components/RequirePermission";
+import { EntityManager } from "@/components/academic/EntityManager";
+import { Field, TextInput } from "@/components/ui/Field";
+import { postulantesService } from "@/services/applicant/postulantes.service";
+import { APPLICANT_MANAGE, type Postulante } from "@/lib/applicant";
+
+interface Form {
+  documento: string;
+  nombres: string;
+  apellidos: string;
+  email: string;
+  telefono: string;
+  fecha_nacimiento: string;
+  colegio: string;
+  ciudad: string;
+}
+
+const EMPTY: Form = {
+  documento: "",
+  nombres: "",
+  apellidos: "",
+  email: "",
+  telefono: "",
+  fecha_nacimiento: "",
+  colegio: "",
+  ciudad: "",
+};
+
+export default function PostulantesPage() {
+  return (
+    <RequirePermission permission={APPLICANT_MANAGE}>
+      <EntityManager<Postulante, Form>
+        title="Postulantes"
+        description="Postulantes (documento como identificador; documento y email únicos)."
+        createLabel="Nuevo postulante"
+        rowKey={(p) => p.documento}
+        columns={[
+          { header: "Documento", render: (p) => p.documento },
+          { header: "Nombre", render: (p) => `${p.nombres} ${p.apellidos}` },
+          { header: "Email", render: (p) => p.email },
+          { header: "Ciudad", render: (p) => p.ciudad },
+          { header: "Colegio", render: (p) => p.colegio },
+        ]}
+        fetchAll={() => postulantesService.list()}
+        emptyForm={EMPTY}
+        toForm={(p) => ({
+          documento: p.documento,
+          nombres: p.nombres,
+          apellidos: p.apellidos,
+          email: p.email,
+          telefono: p.telefono ?? "",
+          fecha_nacimiento: p.fecha_nacimiento,
+          colegio: p.colegio,
+          ciudad: p.ciudad,
+        })}
+        create={(f) =>
+          postulantesService.create({
+            documento: f.documento,
+            nombres: f.nombres,
+            apellidos: f.apellidos,
+            email: f.email,
+            telefono: f.telefono || null,
+            fecha_nacimiento: f.fecha_nacimiento,
+            colegio: f.colegio,
+            ciudad: f.ciudad,
+          })
+        }
+        update={(row, f) =>
+          postulantesService.update(row.documento, {
+            nombres: f.nombres,
+            apellidos: f.apellidos,
+            email: f.email,
+            telefono: f.telefono || null,
+            fecha_nacimiento: f.fecha_nacimiento,
+            colegio: f.colegio,
+            ciudad: f.ciudad,
+          })
+        }
+        remove={(row) => postulantesService.remove(row.documento)}
+        describe={(p) => `${p.nombres} ${p.apellidos} (${p.documento})`}
+        renderForm={({ values, set, fieldError, editing }) => (
+          <>
+            <Field label="Documento" error={fieldError("documento")}>
+              <TextInput
+                value={values.documento}
+                onChange={(e) => set("documento", e.target.value)}
+                invalid={Boolean(fieldError("documento"))}
+                disabled={editing}
+                required
+              />
+            </Field>
+            <Field label="Nombres" error={fieldError("nombres")}>
+              <TextInput
+                value={values.nombres}
+                onChange={(e) => set("nombres", e.target.value)}
+                invalid={Boolean(fieldError("nombres"))}
+                required
+              />
+            </Field>
+            <Field label="Apellidos" error={fieldError("apellidos")}>
+              <TextInput
+                value={values.apellidos}
+                onChange={(e) => set("apellidos", e.target.value)}
+                invalid={Boolean(fieldError("apellidos"))}
+                required
+              />
+            </Field>
+            <Field label="Email" error={fieldError("email")}>
+              <TextInput
+                type="email"
+                value={values.email}
+                onChange={(e) => set("email", e.target.value)}
+                invalid={Boolean(fieldError("email"))}
+                required
+              />
+            </Field>
+            <Field label="Teléfono" error={fieldError("telefono")}>
+              <TextInput
+                value={values.telefono}
+                onChange={(e) => set("telefono", e.target.value)}
+                invalid={Boolean(fieldError("telefono"))}
+              />
+            </Field>
+            <Field label="Fecha de nacimiento" error={fieldError("fecha_nacimiento")}>
+              <TextInput
+                type="date"
+                value={values.fecha_nacimiento}
+                onChange={(e) => set("fecha_nacimiento", e.target.value)}
+                invalid={Boolean(fieldError("fecha_nacimiento"))}
+                required
+              />
+            </Field>
+            <Field label="Colegio" error={fieldError("colegio")}>
+              <TextInput
+                value={values.colegio}
+                onChange={(e) => set("colegio", e.target.value)}
+                invalid={Boolean(fieldError("colegio"))}
+                required
+              />
+            </Field>
+            <Field label="Ciudad" error={fieldError("ciudad")}>
+              <TextInput
+                value={values.ciudad}
+                onChange={(e) => set("ciudad", e.target.value)}
+                invalid={Boolean(fieldError("ciudad"))}
+                required
+              />
+            </Field>
+          </>
+        )}
+      />
+    </RequirePermission>
+  );
+}

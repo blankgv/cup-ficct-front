@@ -16,10 +16,12 @@ import { convocatoriasService } from "@/services/applicant/convocatorias.service
 import { cuposService } from "@/services/applicant/cupos.service";
 import {
   APPLICANT_MANAGE,
+  TURNOS_PREFERENCIA,
   type CarreraCupo,
   type Convocatoria,
   type EstadoPostulacion,
   type Postulacion,
+  type TurnoPreferencia,
 } from "@/lib/applicant";
 
 const ESTADO_STYLE: Record<EstadoPostulacion, string> = {
@@ -185,6 +187,66 @@ function NuevaPostulacionModal({
   );
 }
 
+function TurnoModal({
+  documento,
+  postulacion,
+  onClose,
+  onDone,
+}: {
+  documento: string;
+  postulacion: Postulacion;
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const [turno, setTurno] = useState<TurnoPreferencia>(
+    postulacion.turno_preferencia ?? "MANANA",
+  );
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      await postulacionesService.setTurno(documento, postulacion.convocatoria_id, turno);
+      onDone();
+    } catch (e) {
+      setError(getErrorMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Modal open onClose={onClose} title="Preferencia de turno">
+      <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
+        {error && <Alert variant="error">{error}</Alert>}
+        <Field label="Turno">
+          <SelectInput
+            value={turno}
+            onChange={(e) => setTurno(e.target.value as TurnoPreferencia)}
+          >
+            {TURNOS_PREFERENCIA.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </SelectInput>
+        </Field>
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" loading={busy}>
+            Guardar
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
 function PostulacionesContent({ documento }: { documento: string }) {
   const [rows, setRows] = useState<Postulacion[]>([]);
   const [convocatorias, setConvocatorias] = useState<Convocatoria[]>([]);
@@ -192,6 +254,7 @@ function PostulacionesContent({ documento }: { documento: string }) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actError, setActError] = useState<string | null>(null);
   const [nueva, setNueva] = useState(false);
+  const [turnoFor, setTurnoFor] = useState<Postulacion | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
 
   const convName = useCallback(
@@ -296,6 +359,9 @@ function PostulacionesContent({ documento }: { documento: string }) {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap justify-end gap-2">
+                        <Button variant="secondary" onClick={() => setTurnoFor(p)}>
+                          Turno
+                        </Button>
                         <Button
                           variant="danger"
                           loading={busyId === p.convocatoria_id}
@@ -320,6 +386,18 @@ function PostulacionesContent({ documento }: { documento: string }) {
           onClose={() => setNueva(false)}
           onDone={() => {
             setNueva(false);
+            void load();
+          }}
+        />
+      )}
+
+      {turnoFor && (
+        <TurnoModal
+          documento={documento}
+          postulacion={turnoFor}
+          onClose={() => setTurnoFor(null)}
+          onDone={() => {
+            setTurnoFor(null);
             void load();
           }}
         />

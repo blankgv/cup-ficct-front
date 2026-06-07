@@ -8,6 +8,7 @@ import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { EstadoPagoBadge } from "@/components/payments/EstadoPagoBadge";
+import { ReciboButton } from "@/components/payments/ReciboButton";
 import { getErrorMessage } from "@/lib/api";
 import { pagosService } from "@/services/payments/pagos.service";
 import type { Pago } from "@/lib/payments";
@@ -86,6 +87,7 @@ function ExitoContent() {
                 <span className="text-2xl font-semibold text-slate-900">{pago.monto}</span>
               </div>
               <p className="text-sm text-green-700">¡Pago confirmado!</p>
+              <ReciboButton pagoId={pago.id} />
             </>
           )}
 

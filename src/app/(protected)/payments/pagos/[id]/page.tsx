@@ -11,6 +11,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { Field, SelectInput, TextArea } from "@/components/ui/Field";
 import { EstadoPagoBadge } from "@/components/payments/EstadoPagoBadge";
 import { ComprobantesSection } from "@/components/payments/ComprobantesSection";
+import { ReciboButton } from "@/components/payments/ReciboButton";
 import { useCan } from "@/hooks/useAuth";
 import { getErrorMessage, getValidationErrors } from "@/lib/api";
 import { pagosService } from "@/services/payments/pagos.service";
@@ -215,6 +216,13 @@ function PagoDetalleContent({ id }: { id: number }) {
           )}
         </Card>
       ) : null}
+
+      {pago && pago.estado === "PAGADO" && (
+        <Card className="mt-4">
+          <h2 className="mb-3 text-sm font-semibold text-slate-700">Recibo</h2>
+          <ReciboButton pagoId={pago.id} />
+        </Card>
+      )}
 
       {pago && pago.estado === "PENDIENTE" && (
         <Card className="mt-4">

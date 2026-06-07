@@ -36,6 +36,7 @@ export interface EntityManagerProps<T, F> {
   describe: (row: T) => string;
   rowActions?: (row: T) => ReactNode;
   toolbar?: ReactNode;
+  summary?: (rows: T[]) => ReactNode;
   createLabel?: string;
   emptyText?: string;
 }
@@ -57,6 +58,7 @@ export function EntityManager<T, F>(props: EntityManagerProps<T, F>) {
     describe,
     rowActions,
     toolbar,
+    summary,
     createLabel = "Nuevo",
     emptyText = "No hay registros.",
   } = props;
@@ -202,6 +204,12 @@ export function EntityManager<T, F>(props: EntityManagerProps<T, F>) {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {!loading && summary && (
+          <div className="border-t border-slate-200 px-4 py-3 text-sm">
+            {summary(rows)}
           </div>
         )}
       </Card>

@@ -21,6 +21,7 @@ const ACADEMIC_PERMISSION = "academic.manage";
 const APPLICANT_PERMISSION = "applicant.manage";
 const GRADE_PERMISSION = "grade.manage";
 const ATTENDANCE_PERMISSION = "attendance.manage";
+const PAYMENT_PERMISSION = "payment.manage";
 
 const NAV_SECTIONS: NavSection[] = [
   {
@@ -58,6 +59,12 @@ const NAV_SECTIONS: NavSection[] = [
       { href: "/evaluation/boletin", label: "Boletín", permission: GRADE_PERMISSION },
       { href: "/evaluation/asistencia", label: "Planilla de asistencia", permission: ATTENDANCE_PERMISSION },
       { href: "/evaluation/reporte-asistencia", label: "Reporte de asistencia", permission: ATTENDANCE_PERMISSION },
+    ],
+  },
+  {
+    title: "Pagos",
+    items: [
+      { href: "/payments/pagos", label: "Gestión de pagos", permission: PAYMENT_PERMISSION },
     ],
   },
 ];

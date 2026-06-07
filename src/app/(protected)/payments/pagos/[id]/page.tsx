@@ -5,12 +5,76 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Card, PageHeader } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
+import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
 import { Spinner } from "@/components/ui/Spinner";
+import { Field, TextArea } from "@/components/ui/Field";
 import { EstadoPagoBadge } from "@/components/payments/EstadoPagoBadge";
 import { useCan } from "@/hooks/useAuth";
-import { getErrorMessage } from "@/lib/api";
+import { getErrorMessage, getValidationErrors } from "@/lib/api";
 import { pagosService } from "@/services/payments/pagos.service";
 import { PAYMENT_MANAGE, type Pago } from "@/lib/payments";
+
+function RechazarModal({
+  id,
+  onClose,
+  onDone,
+}: {
+  id: number;
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const [motivo, setMotivo] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fieldErr, setFieldErr] = useState<string | undefined>();
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!motivo.trim()) {
+      setFieldErr("El motivo es obligatorio.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    setFieldErr(undefined);
+    try {
+      await pagosService.rechazar(id, motivo);
+      onDone();
+    } catch (e) {
+      const v = getValidationErrors(e);
+      if (v?.motivo) setFieldErr(v.motivo[0]);
+      else setError(getErrorMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Modal open onClose={onClose} title="Rechazar pago">
+      <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
+        {error && <Alert variant="error">{error}</Alert>}
+        <Field label="Motivo del rechazo" error={fieldErr}>
+          <TextArea
+            rows={3}
+            value={motivo}
+            onChange={(e) => setMotivo(e.target.value)}
+            invalid={Boolean(fieldErr)}
+            required
+          />
+        </Field>
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" variant="danger" loading={busy}>
+            Rechazar
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -26,6 +90,9 @@ function PagoDetalleContent({ id }: { id: number }) {
   const [pago, setPago] = useState<Pago | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actError, setActError] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const [rechazando, setRechazando] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -42,6 +109,18 @@ function PagoDetalleContent({ id }: { id: number }) {
   useEffect(() => {
     void load();
   }, [load]);
+
+  async function confirmar() {
+    setActError(null);
+    setConfirming(true);
+    try {
+      setPago(await pagosService.confirmar(id));
+    } catch (e) {
+      setActError(getErrorMessage(e));
+    } finally {
+      setConfirming(false);
+    }
+  }
 
   return (
     <div>
@@ -94,8 +173,43 @@ function PagoDetalleContent({ id }: { id: number }) {
               />
             )}
           </div>
+
+          {isStaff && (
+            <div className="mt-6 border-t border-slate-200 pt-4">
+              {actError && (
+                <div className="mb-3">
+                  <Alert variant="error">{actError}</Alert>
+                </div>
+              )}
+              {pago.estado === "PENDIENTE" ? (
+                <div className="flex flex-wrap gap-2">
+                  <Button onClick={confirmar} loading={confirming}>
+                    Confirmar pago
+                  </Button>
+                  <Button variant="danger" onClick={() => setRechazando(true)}>
+                    Rechazar
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500">
+                  El pago ya está {pago.estado}; no admite confirmar/rechazar.
+                </p>
+              )}
+            </div>
+          )}
         </Card>
       ) : null}
+
+      {rechazando && pago && (
+        <RechazarModal
+          id={pago.id}
+          onClose={() => setRechazando(false)}
+          onDone={() => {
+            setRechazando(false);
+            void load();
+          }}
+        />
+      )}
     </div>
   );
 }

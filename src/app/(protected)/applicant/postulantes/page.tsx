@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { RequirePermission } from "@/components/RequirePermission";
 import { EntityManager } from "@/components/academic/EntityManager";
 import { Field, TextInput } from "@/components/ui/Field";
+import { Button } from "@/components/ui/Button";
+import { CargaMasivaModal } from "@/components/applicant/CargaMasivaModal";
 import { postulantesService } from "@/services/applicant/postulantes.service";
 import { APPLICANT_MANAGE, type Postulante } from "@/lib/applicant";
 
@@ -28,13 +31,28 @@ const EMPTY: Form = {
   ciudad: "",
 };
 
-export default function PostulantesPage() {
+function PostulantesContent() {
+  const [carga, setCarga] = useState(false);
+  // Remontar la tabla tras una carga masiva para refrescar los datos.
+  const [reloadKey, setReloadKey] = useState(0);
+
   return (
-    <RequirePermission permission={APPLICANT_MANAGE}>
+    <>
       <EntityManager<Postulante, Form>
+        key={reloadKey}
         title="Postulantes"
         description="Postulantes (documento como identificador; documento y email únicos)."
         createLabel="Nuevo postulante"
+        toolbar={
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-slate-600">
+              Cargá postulantes en lote desde un archivo CSV/Excel.
+            </p>
+            <Button variant="secondary" onClick={() => setCarga(true)}>
+              Carga masiva
+            </Button>
+          </div>
+        }
         rowKey={(p) => p.documento}
         columns={[
           { header: "Documento", render: (p) => p.documento },
@@ -151,6 +169,24 @@ export default function PostulantesPage() {
           </>
         )}
       />
+
+      {carga && (
+        <CargaMasivaModal
+          onClose={() => setCarga(false)}
+          onDone={() => {
+            setCarga(false);
+            setReloadKey((k) => k + 1);
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+export default function PostulantesPage() {
+  return (
+    <RequirePermission permission={APPLICANT_MANAGE}>
+      <PostulantesContent />
     </RequirePermission>
   );
 }

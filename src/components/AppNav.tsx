@@ -19,6 +19,7 @@ interface NavSection {
 
 const ACADEMIC_PERMISSION = "academic.manage";
 const APPLICANT_PERMISSION = "applicant.manage";
+const APPLICANT_VERIFY_PERMISSION = "applicant.verify";
 const GRADE_PERMISSION = "grade.manage";
 const ATTENDANCE_PERMISSION = "attendance.manage";
 const PAYMENT_PERMISSION = "payment.manage";
@@ -50,6 +51,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: "/applicant/postulantes", label: "Postulantes", permission: APPLICANT_PERMISSION },
       { href: "/applicant/convocatorias", label: "Convocatorias", permission: APPLICANT_PERMISSION },
+      { href: "/applicant/verificacion", label: "Verificación", permission: APPLICANT_VERIFY_PERMISSION },
     ],
   },
   {

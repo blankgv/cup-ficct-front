@@ -13,10 +13,10 @@ export function ReportTable({ reporte }: { reporte: Reporte }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
-        <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+        <thead className="border-b border-slate-200/80 text-[11px] font-medium uppercase tracking-wide text-slate-400">
           <tr>
             {reporte.headers.map((h, i) => (
-              <th key={i} className="px-4 py-3">
+              <th key={i} className="px-4 py-2.5">
                 {h}
               </th>
             ))}
@@ -24,9 +24,9 @@ export function ReportTable({ reporte }: { reporte: Reporte }) {
         </thead>
         <tbody>
           {reporte.rows.map((row, ri) => (
-            <tr key={ri} className="border-b border-slate-100">
+            <tr key={ri} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60">
               {reporte.headers.map((_, ci) => (
-                <td key={ci} className="px-4 py-3 align-top">
+                <td key={ci} className="px-4 py-2.5 align-top text-slate-700">
                   {row[ci] === null || row[ci] === undefined ? "—" : row[ci]}
                 </td>
               ))}

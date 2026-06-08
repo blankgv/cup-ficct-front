@@ -107,21 +107,26 @@ export function AppNav() {
   }
 
   return (
-    <aside className="flex w-60 flex-col border-r border-slate-200 bg-white">
-      <div className="border-b border-slate-200 px-5 py-4">
-        <p className="text-base font-semibold text-slate-900">CUP-FICCT</p>
-        {user?.role && (
-          <p className="mt-0.5 text-xs uppercase tracking-wide text-slate-400">
-            {user.role}
-          </p>
-        )}
+    <aside className="flex w-64 flex-col border-r border-slate-200/80 bg-white">
+      <div className="flex items-center gap-2.5 px-5 py-5">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-sm font-bold text-white">
+          C
+        </span>
+        <div>
+          <p className="text-sm font-semibold tracking-tight text-slate-900">CUP-FICCT</p>
+          {user?.role && (
+            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+              {user.role}
+            </p>
+          )}
+        </div>
       </div>
 
-      <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
+      <nav className="flex-1 space-y-5 overflow-y-auto px-3 pb-4">
         {sections.map((section, i) => (
-          <div key={section.title ?? `section-${i}`} className="space-y-1">
+          <div key={section.title ?? `section-${i}`} className="space-y-0.5">
             {section.title && (
-              <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                 {section.title}
               </p>
             )}
@@ -132,10 +137,10 @@ export function AppNav() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`block rounded-md px-3 py-2 text-sm font-medium transition ${
+                  className={`block rounded-lg px-3 py-1.5 text-sm transition-colors ${
                     active
-                      ? "bg-slate-900 text-white"
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                      ? "bg-slate-100 font-medium text-slate-900"
+                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                   }`}
                 >
                   {item.label}
@@ -146,14 +151,14 @@ export function AppNav() {
         ))}
       </nav>
 
-      <div className="border-t border-slate-200 px-5 py-4">
-        <p className="truncate text-sm text-slate-600" title={user?.email}>
+      <div className="border-t border-slate-200/80 px-4 py-4">
+        <p className="truncate text-sm font-medium text-slate-700" title={user?.email}>
           {user?.username ?? user?.email}
         </p>
         <button
           type="button"
           onClick={onLogout}
-          className="mt-2 text-sm font-medium text-red-600 hover:text-red-500"
+          className="mt-1.5 text-xs font-medium text-slate-400 transition hover:text-red-600"
         >
           Cerrar sesión
         </button>

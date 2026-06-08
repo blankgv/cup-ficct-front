@@ -50,10 +50,7 @@ function PostulantesContent() {
         description="Postulantes (documento como identificador; documento y email únicos)."
         createLabel="Nuevo postulante"
         toolbar={
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-slate-600">
-              Cargá postulantes en lote desde un archivo CSV/Excel.
-            </p>
+          <div className="flex justify-end">
             <Button variant="secondary" onClick={() => setCarga(true)}>
               Carga masiva
             </Button>

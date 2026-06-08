@@ -76,7 +76,11 @@ const NAV_SECTIONS: NavSection[] = [
   {
     title: "Reportes",
     items: [
-      { href: "/reports/chat", label: "Reportes", permission: REPORT_PERMISSION },
+      { href: "/reports/estudiantes-por-grupo", label: "Estudiantes por grupo", permission: REPORT_PERMISSION },
+      { href: "/reports/postulantes", label: "Postulantes", permission: REPORT_PERMISSION },
+      { href: "/reports/recaudacion", label: "Recaudación", permission: REPORT_PERMISSION },
+      { href: "/reports/resultados", label: "Resultados", permission: REPORT_PERMISSION },
+      { href: "/reports/asignacion-carreras", label: "Asignación de carreras", permission: REPORT_PERMISSION },
     ],
   },
 ];

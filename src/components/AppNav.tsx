@@ -25,6 +25,7 @@ const APPLICANT_VERIFY_PERMISSION = "applicant.verify";
 const GRADE_PERMISSION = "grade.manage";
 const ATTENDANCE_PERMISSION = "attendance.manage";
 const PAYMENT_PERMISSION = "payment.manage";
+const REPORT_PERMISSION = "report.view";
 
 const NAV_SECTIONS: NavSection[] = [
   {
@@ -70,6 +71,17 @@ const NAV_SECTIONS: NavSection[] = [
     title: "Pagos",
     items: [
       { href: "/payments/pagos", label: "Gestión de pagos", permission: PAYMENT_PERMISSION },
+    ],
+  },
+  {
+    title: "Reportes",
+    items: [
+      { href: "/reports/estudiantes-por-grupo", label: "Estudiantes por grupo", permission: REPORT_PERMISSION },
+      { href: "/reports/postulantes", label: "Postulantes", permission: REPORT_PERMISSION },
+      { href: "/reports/recaudacion", label: "Recaudación", permission: REPORT_PERMISSION },
+      { href: "/reports/resultados", label: "Resultados", permission: REPORT_PERMISSION },
+      { href: "/reports/asignacion-carreras", label: "Asignación de carreras", permission: REPORT_PERMISSION },
+      { href: "/reports/voz", label: "Reporte por voz", permission: REPORT_PERMISSION },
     ],
   },
 ];

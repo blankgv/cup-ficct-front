@@ -112,7 +112,7 @@ function PostulantesContent() {
           <>
             <Link
               href={`/applicant/postulantes/${p.documento}/postulaciones`}
-              className="inline-flex items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-lg bg-white px-3.5 py-2 text-sm font-medium text-slate-700 ring-1 ring-inset ring-slate-200 transition-colors hover:bg-slate-50 hover:text-slate-900"
             >
               Postulaciones
             </Link>

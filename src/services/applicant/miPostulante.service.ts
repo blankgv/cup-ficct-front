@@ -2,6 +2,7 @@ import { api } from "@/lib/api";
 import type { DataResponse } from "@/lib/types";
 import type { Postulante } from "@/lib/applicant";
 import type { Pago } from "@/lib/payments";
+import type { Boletin, ReporteAsistencia } from "@/lib/evaluation";
 import { APPLICANT_BASE } from "./postulantes.service";
 
 const base = `${APPLICANT_BASE}/mi-postulante`;
@@ -35,5 +36,15 @@ export const miPostulanteService = {
   async pagos(): Promise<Pago[]> {
     const { data } = await api.get<DataResponse<Pago[]>>(`${base}/pagos`);
     return data.data;
+  },
+  // Mi boletín (notas + promedio + estado) de mi inscripción.
+  async boletin(): Promise<Boletin> {
+    const { data } = await api.get<Boletin>(`${base}/boletin`);
+    return data;
+  },
+  // Mi reporte de asistencia (% por materia, global y habilitación).
+  async asistencia(): Promise<ReporteAsistencia> {
+    const { data } = await api.get<ReporteAsistencia>(`${base}/asistencia`);
+    return data;
   },
 };

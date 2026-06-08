@@ -34,6 +34,7 @@ const NAV_SECTIONS: NavSection[] = [
       { href: "/dashboard", label: "Inicio", permission: null },
       { href: "/perfil", label: "Mi perfil", permission: null },
       { href: "/mi-postulacion", label: "Mi postulación", permission: null, role: "POSTULANTE" },
+      { href: "/mi-rendimiento", label: "Mi rendimiento", permission: null, role: "POSTULANTE" },
       { href: "/usuarios", label: "Usuarios", permission: "user.manage" },
       { href: "/roles", label: "Roles", permission: "role.manage" },
     ],

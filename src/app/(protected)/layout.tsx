@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthStore } from "@/store/auth.store";
 import { AppNav } from "@/components/AppNav";
+import { ReportChatWidget } from "@/components/reports/ReportChatWidget";
 import { FullScreenLoader } from "@/components/ui/Spinner";
 
 // Layout protegido: exige sesión, fuerza el cambio de contraseña y carga /me al montar.
@@ -44,6 +45,7 @@ export default function ProtectedLayout({
     <div className="flex min-h-screen">
       <AppNav />
       <main className="flex-1 p-6 lg:p-8">{children}</main>
+      <ReportChatWidget />
     </div>
   );
 }

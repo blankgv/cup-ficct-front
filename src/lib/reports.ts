@@ -20,7 +20,8 @@ export interface ReporteVozInterpretacion {
     | "postulantes"
     | "recaudacion"
     | "resultados"
-    | "asignacion_carreras";
+    | "asignacion_carreras"
+    | "admitidos";
   filtros: Record<string, string | number>;
 }
 

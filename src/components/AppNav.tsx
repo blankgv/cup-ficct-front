@@ -81,6 +81,7 @@ const NAV_SECTIONS: NavSection[] = [
       { href: "/reports/recaudacion", label: "Recaudación", permission: REPORT_PERMISSION },
       { href: "/reports/resultados", label: "Resultados", permission: REPORT_PERMISSION },
       { href: "/reports/asignacion-carreras", label: "Asignación de carreras", permission: REPORT_PERMISSION },
+      { href: "/reports/admitidos", label: "Admitidos", permission: REPORT_PERMISSION },
     ],
   },
 ];

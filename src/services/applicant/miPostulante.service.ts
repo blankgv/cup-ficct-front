@@ -1,6 +1,7 @@
 import { api } from "@/lib/api";
 import type { DataResponse } from "@/lib/types";
 import type { Postulante } from "@/lib/applicant";
+import type { Pago } from "@/lib/payments";
 import { APPLICANT_BASE } from "./postulantes.service";
 
 const base = `${APPLICANT_BASE}/mi-postulante`;
@@ -28,6 +29,11 @@ export const miPostulanteService = {
     const form = new FormData();
     form.append("titulo", file);
     const { data } = await api.post<DataResponse<Postulante>>(`${base}/titulo`, form);
+    return data.data;
+  },
+  // Pagos del propio postulante (cobros de inscripción y otros).
+  async pagos(): Promise<Pago[]> {
+    const { data } = await api.get<DataResponse<Pago[]>>(`${base}/pagos`);
     return data.data;
   },
 };

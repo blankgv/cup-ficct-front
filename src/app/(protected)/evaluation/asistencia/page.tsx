@@ -114,8 +114,8 @@ function PlanillaAsistenciaContent() {
             >
               <option value="">Seleccioná una materia…</option>
               {materias.map((m) => (
-                <option key={m.materia_sigla} value={m.materia_sigla}>
-                  {m.materia_sigla}
+                <option key={m.sigla} value={m.sigla}>
+                  {m.sigla} — {m.nombre}
                 </option>
               ))}
             </SelectInput>

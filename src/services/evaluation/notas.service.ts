@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import type { DataResponse } from "@/lib/types";
 import type { Boletin, CargaResumen, Nota } from "@/lib/evaluation";
 
 const BASE = "/evaluation";
@@ -17,10 +18,10 @@ export interface BulkNotasPayload {
 }
 
 export const notasService = {
-  // Carga individual (upsert idempotente) → recurso directo.
+  // Carga individual (upsert idempotente). La respuesta viene envuelta en {data}.
   async create(payload: NotaPayload): Promise<Nota> {
-    const { data } = await api.post<Nota>(`${BASE}/notas`, payload);
-    return data;
+    const { data } = await api.post<DataResponse<Nota>>(`${BASE}/notas`, payload);
+    return data.data;
   },
   // Carga masiva por grupo-materia → resumen plano.
   async bulk(

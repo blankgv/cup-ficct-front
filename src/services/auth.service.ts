@@ -23,6 +23,25 @@ export async function login(
   return data;
 }
 
+export interface RegisterPayload {
+  documento: string;
+  nombres: string;
+  apellidos: string;
+  email: string;
+  telefono?: string | null;
+  password: string;
+  password_confirmation: string;
+}
+
+// Auto-registro público de postulante. Devuelve token + usuario (auto-login).
+export async function register(payload: RegisterPayload): Promise<LoginResponse> {
+  const { data } = await api.post<LoginResponse>(
+    "/applicant-admission/registro",
+    payload,
+  );
+  return data;
+}
+
 export async function me(): Promise<MeResponse> {
   const { data } = await api.get<MeResponse>("/auth/me");
   return data;

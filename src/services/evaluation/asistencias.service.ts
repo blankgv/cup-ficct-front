@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import type { DataResponse } from "@/lib/types";
 import type {
   Asistencia,
   CargaResumen,
@@ -22,10 +23,13 @@ export interface BulkAsistenciasPayload {
 }
 
 export const asistenciasService = {
-  // Carga individual (upsert idempotente) → recurso directo.
+  // Carga individual (upsert idempotente). La respuesta viene envuelta en {data}.
   async create(payload: AsistenciaPayload): Promise<Asistencia> {
-    const { data } = await api.post<Asistencia>(`${BASE}/asistencias`, payload);
-    return data;
+    const { data } = await api.post<DataResponse<Asistencia>>(
+      `${BASE}/asistencias`,
+      payload,
+    );
+    return data.data;
   },
   // Carga masiva por grupo-materia → resumen plano.
   async bulk(

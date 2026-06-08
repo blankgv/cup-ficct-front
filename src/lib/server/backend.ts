@@ -1,10 +1,14 @@
 // Utilidades de servidor (route handlers). No usar en el cliente.
 
-// URL base de la API (única variable, server y cliente).
+// URL base de la API para llamadas server-side (proxys de archivos).
+// En Docker el server de Next corre dentro del contenedor: "localhost" apunta al
+// propio contenedor, no al backend. Por eso se permite una URL server-only
+// (BACKEND_API_URL, ej. http://host.docker.internal:8000/api). Si no está,
+// cae a NEXT_PUBLIC_API_URL (válido cuando el server corre en el host).
 export function backendBaseUrl(): string {
-  const url = process.env.NEXT_PUBLIC_API_URL;
+  const url = process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL;
   if (!url) {
-    throw new Error("NEXT_PUBLIC_API_URL no configurada");
+    throw new Error("BACKEND_API_URL / NEXT_PUBLIC_API_URL no configurada");
   }
   return url.replace(/\/$/, "");
 }

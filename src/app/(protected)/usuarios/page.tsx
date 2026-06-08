@@ -211,7 +211,8 @@ function UserModal({
   const [email, setEmail] = useState(user?.email ?? "");
   const [username, setUsername] = useState(user?.username ?? "");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState(user?.role ?? ROLE_OPTIONS[0]);
+  // En alta no se preselecciona rol: obliga a elegirlo (evita crear ADMINISTRADOR por descuido).
+  const [role, setRole] = useState(user?.role ?? "");
   const [submitting, setSubmitting] = useState(false);
 
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
@@ -335,7 +336,9 @@ function UserModal({
             value={role}
             onChange={(e) => setRole(e.target.value)}
             invalid={Boolean(fieldError("role"))}
+            required
           >
+            <option value="">Seleccioná un rol…</option>
             {ROLE_OPTIONS.map((r) => (
               <option key={r} value={r}>
                 {r}

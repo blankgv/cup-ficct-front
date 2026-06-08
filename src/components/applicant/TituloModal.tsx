@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
+import { FilePreview } from "@/components/ui/FilePreview";
 import { getErrorMessage } from "@/lib/api";
 import { postulantesService } from "@/services/applicant/postulantes.service";
 import type { Postulante } from "@/lib/applicant";
@@ -19,7 +20,7 @@ export function TituloModal({
 }) {
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
-  const [viewing, setViewing] = useState(false);
+  const [preview, setPreview] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasTitulo, setHasTitulo] = useState(
     Boolean(postulante.titulo_bachiller_path),
@@ -47,19 +48,6 @@ export function TituloModal({
     }
   }
 
-  async function view() {
-    setViewing(true);
-    setError(null);
-    try {
-      const url = await postulantesService.fetchTituloUrl(postulante.documento);
-      window.open(url, "_blank", "noopener,noreferrer");
-    } catch (e) {
-      setError(getErrorMessage(e));
-    } finally {
-      setViewing(false);
-    }
-  }
-
   return (
     <Modal
       open
@@ -74,8 +62,8 @@ export function TituloModal({
             {hasTitulo ? "Tiene título cargado." : "Sin título cargado."}
           </span>
           {hasTitulo && (
-            <Button variant="secondary" onClick={view} loading={viewing}>
-              Ver / descargar
+            <Button variant="secondary" onClick={() => setPreview(true)}>
+              Ver
             </Button>
           )}
         </div>
@@ -99,6 +87,15 @@ export function TituloModal({
           </div>
         </form>
       </div>
+
+      {preview && (
+        <FilePreview
+          title={`Título · ${postulante.nombres} ${postulante.apellidos}`}
+          proxyPath={`/api/titulo/${postulante.documento}`}
+          downloadName={`titulo-${postulante.documento}`}
+          onClose={() => setPreview(false)}
+        />
+      )}
     </Modal>
   );
 }

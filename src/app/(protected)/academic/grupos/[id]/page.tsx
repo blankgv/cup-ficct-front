@@ -129,7 +129,7 @@ function AssignDocenteModal({
     setBusy(true);
     setError(null);
     try {
-      await grupoMateriasService.assignDocente(grupo, item.materia_sigla, ci);
+      await grupoMateriasService.assignDocente(grupo, item.sigla, ci);
       onDone();
     } catch (e) {
       setError(getErrorMessage(e));
@@ -139,7 +139,7 @@ function AssignDocenteModal({
   }
 
   return (
-    <Modal open onClose={onClose} title={`Docente · ${item.materia_sigla}`}>
+    <Modal open onClose={onClose} title={`Docente · ${item.sigla}`}>
       <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
         {error && <Alert variant="error">{error}</Alert>}
         {loading ? (
@@ -223,7 +223,7 @@ function GrupoMateriasContent({ grupo }: { grupo: string }) {
     }
   }
 
-  const taken = new Set(rows.map((r) => r.materia_sigla));
+  const taken = new Set(rows.map((r) => r.sigla));
 
   return (
     <div>
@@ -266,27 +266,29 @@ function GrupoMateriasContent({ grupo }: { grupo: string }) {
               <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
                 <tr>
                   <th className="px-4 py-3">Sigla</th>
+                  <th className="px-4 py-3">Materia</th>
                   <th className="px-4 py-3">Docente</th>
                   <th className="px-4 py-3 text-right">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((r) => {
-                  const busy = busySigla === r.materia_sigla;
+                  const busy = busySigla === r.sigla;
                   return (
-                    <tr key={r.materia_sigla} className="border-b border-slate-100">
+                    <tr key={r.sigla} className="border-b border-slate-100">
                       <td className="px-4 py-3 align-top font-medium text-slate-900">
-                        {r.materia_sigla}
+                        {r.sigla}
                       </td>
+                      <td className="px-4 py-3 align-top">{r.nombre}</td>
                       <td className="px-4 py-3 align-top">
                         {r.docente
                           ? `${r.docente.nombres} ${r.docente.apellidos}`
-                          : "— sin docente"}
+                          : "—"}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap justify-end gap-2">
                           <Link
-                            href={`/academic/grupos/${grupo}/materias/${r.materia_sigla}/horarios`}
+                            href={`/academic/grupos/${grupo}/materias/${r.sigla}/horarios`}
                             className="inline-flex items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50"
                           >
                             Horarios
@@ -298,7 +300,7 @@ function GrupoMateriasContent({ grupo }: { grupo: string }) {
                             <Button
                               variant="secondary"
                               loading={busy}
-                              onClick={() => removeDocente(r.materia_sigla)}
+                              onClick={() => removeDocente(r.sigla)}
                             >
                               Quitar docente
                             </Button>
@@ -306,7 +308,7 @@ function GrupoMateriasContent({ grupo }: { grupo: string }) {
                           <Button
                             variant="danger"
                             loading={busy}
-                            onClick={() => detach(r.materia_sigla)}
+                            onClick={() => detach(r.sigla)}
                           >
                             Quitar
                           </Button>

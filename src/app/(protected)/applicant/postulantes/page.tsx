@@ -20,6 +20,8 @@ interface Form {
   fecha_nacimiento: string;
   colegio: string;
   ciudad: string;
+  // Título de bachiller (opcional): se sube tras crear/actualizar el postulante.
+  titulo: File | null;
 }
 
 const EMPTY: Form = {
@@ -31,6 +33,7 @@ const EMPTY: Form = {
   fecha_nacimiento: "",
   colegio: "",
   ciudad: "",
+  titulo: null,
 };
 
 function PostulantesContent() {
@@ -75,9 +78,10 @@ function PostulantesContent() {
           fecha_nacimiento: p.fecha_nacimiento,
           colegio: p.colegio,
           ciudad: p.ciudad,
+          titulo: null,
         })}
-        create={(f) =>
-          postulantesService.create({
+        create={async (f) => {
+          await postulantesService.create({
             documento: f.documento,
             nombres: f.nombres,
             apellidos: f.apellidos,
@@ -86,10 +90,12 @@ function PostulantesContent() {
             fecha_nacimiento: f.fecha_nacimiento,
             colegio: f.colegio,
             ciudad: f.ciudad,
-          })
-        }
-        update={(row, f) =>
-          postulantesService.update(row.documento, {
+          });
+          // El título se sube aparte (necesita el postulante ya creado).
+          if (f.titulo) await postulantesService.uploadTitulo(f.documento, f.titulo);
+        }}
+        update={async (row, f) => {
+          await postulantesService.update(row.documento, {
             nombres: f.nombres,
             apellidos: f.apellidos,
             email: f.email,
@@ -97,8 +103,9 @@ function PostulantesContent() {
             fecha_nacimiento: f.fecha_nacimiento,
             colegio: f.colegio,
             ciudad: f.ciudad,
-          })
-        }
+          });
+          if (f.titulo) await postulantesService.uploadTitulo(row.documento, f.titulo);
+        }}
         remove={(row) => postulantesService.remove(row.documento)}
         describe={(p) => `${p.nombres} ${p.apellidos} (${p.documento})`}
         rowActions={(p) => (
@@ -181,6 +188,18 @@ function PostulantesContent() {
                 invalid={Boolean(fieldError("ciudad"))}
                 required
               />
+            </Field>
+            <Field
+              label={editing ? "Título de bachiller (reemplazar)" : "Título de bachiller (opcional)"}
+              error={fieldError("titulo")}
+            >
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                onChange={(e) => set("titulo", e.target.files?.[0] ?? null)}
+                className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-slate-700"
+              />
+              <p className="mt-1 text-xs text-slate-500">pdf/jpg/jpeg/png, máx. 5 MB.</p>
             </Field>
           </>
         )}

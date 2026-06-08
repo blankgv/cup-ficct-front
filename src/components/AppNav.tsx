@@ -9,6 +9,8 @@ interface NavItem {
   label: string;
   // Permiso requerido para ver el item (null = visible siempre).
   permission: string | null;
+  // Rol requerido (además del permiso). Si se define, debe coincidir.
+  role?: string;
 }
 
 interface NavSection {
@@ -19,6 +21,7 @@ interface NavSection {
 
 const ACADEMIC_PERMISSION = "academic.manage";
 const APPLICANT_PERMISSION = "applicant.manage";
+const APPLICANT_VERIFY_PERMISSION = "applicant.verify";
 const GRADE_PERMISSION = "grade.manage";
 const ATTENDANCE_PERMISSION = "attendance.manage";
 const PAYMENT_PERMISSION = "payment.manage";
@@ -29,6 +32,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: "/dashboard", label: "Inicio", permission: null },
       { href: "/perfil", label: "Mi perfil", permission: null },
+      { href: "/mi-postulacion", label: "Mi postulación", permission: null, role: "POSTULANTE" },
       { href: "/usuarios", label: "Usuarios", permission: "user.manage" },
       { href: "/roles", label: "Roles", permission: "role.manage" },
     ],
@@ -50,6 +54,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: "/applicant/postulantes", label: "Postulantes", permission: APPLICANT_PERMISSION },
       { href: "/applicant/convocatorias", label: "Convocatorias", permission: APPLICANT_PERMISSION },
+      { href: "/applicant/verificacion", label: "Verificación", permission: APPLICANT_VERIFY_PERMISSION },
     ],
   },
   {
@@ -74,11 +79,13 @@ export function AppNav() {
   const router = useRouter();
   const { user, can, logout } = useAuth();
 
-  // Menú filtrado según permisos (RBAC); secciones sin ítems visibles se ocultan.
+  // Menú filtrado según permisos (RBAC) y rol; secciones sin ítems visibles se ocultan.
   const sections = NAV_SECTIONS.map((section) => ({
     ...section,
     items: section.items.filter(
-      (item) => item.permission === null || can(item.permission),
+      (item) =>
+        (item.permission === null || can(item.permission)) &&
+        (!item.role || user?.role === item.role),
     ),
   })).filter((section) => section.items.length > 0);
 

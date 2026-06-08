@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
+import { FilePreview } from "@/components/ui/FilePreview";
 import { getErrorMessage } from "@/lib/api";
 import { comprobantesService } from "@/services/payments/comprobantes.service";
 import type { Comprobante } from "@/lib/payments";
@@ -32,7 +33,7 @@ export function ComprobantesSection({
   const [uploadOk, setUploadOk] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [downloadingId, setDownloadingId] = useState<number | null>(null);
+  const [preview, setPreview] = useState<Comprobante | null>(null);
 
   const load = useCallback(async () => {
     if (!isStaff) return;
@@ -70,18 +71,6 @@ export function ComprobantesSection({
       setUploadError(getErrorMessage(e));
     } finally {
       setUploading(false);
-    }
-  }
-
-  async function download(id: number) {
-    setDownloadingId(id);
-    try {
-      const url = await comprobantesService.downloadUrl(id);
-      window.open(url, "_blank", "noopener,noreferrer");
-    } catch (e) {
-      setListError(getErrorMessage(e));
-    } finally {
-      setDownloadingId(null);
     }
   }
 
@@ -127,18 +116,23 @@ export function ComprobantesSection({
                       {c.mime} · {formatSize(c.tamano)} · {c.created_at}
                     </p>
                   </div>
-                  <Button
-                    variant="secondary"
-                    loading={downloadingId === c.id}
-                    onClick={() => download(c.id)}
-                  >
-                    Ver / descargar
+                  <Button variant="secondary" onClick={() => setPreview(c)}>
+                    Ver
                   </Button>
                 </li>
               ))}
             </ul>
           )}
         </div>
+      )}
+
+      {preview && (
+        <FilePreview
+          title={preview.nombre_original}
+          proxyPath={`/api/comprobante/${preview.id}`}
+          downloadName={preview.nombre_original}
+          onClose={() => setPreview(null)}
+        />
       )}
     </Card>
   );

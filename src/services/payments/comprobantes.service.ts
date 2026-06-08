@@ -1,4 +1,4 @@
-import { api, fetchFotoObjectUrl } from "@/lib/api";
+import { api } from "@/lib/api";
 import type { DataResponse } from "@/lib/types";
 import type { Comprobante } from "@/lib/payments";
 import { PAYMENTS_BASE } from "./pagos.service";
@@ -20,9 +20,5 @@ export const comprobantesService = {
       `${PAYMENTS_BASE}/pagos/${pagoId}/comprobantes`,
     );
     return data.data;
-  },
-  // Descarga (staff): 302 → URL firmada, vía proxy same-origin.
-  downloadUrl(comprobanteId: number): Promise<string> {
-    return fetchFotoObjectUrl(`/api/comprobante/${comprobanteId}`);
   },
 };

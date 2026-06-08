@@ -85,10 +85,13 @@ export interface Grupo {
   created_at?: string;
 }
 
+// La API lista las materias del grupo como Materia (sigla/nombre/peso).
+// El docente puede venir embebido si el backend lo incluye (opcional).
 export interface GrupoMateria {
-  grupo_id: number;
-  materia_sigla: string;
-  docente: Docente | null;
+  sigla: string;
+  nombre: string;
+  peso: number;
+  docente?: Docente | null;
 }
 
 export interface Horario {

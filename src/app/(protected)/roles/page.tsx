@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { Field, TextInput } from "@/components/ui/Field";
 import { Modal } from "@/components/ui/Modal";
 import { Spinner } from "@/components/ui/Spinner";
+import { permissionLabel, permissionGroupLabel } from "@/lib/permissions";
 
 export default function RolesPage() {
   return (
@@ -107,9 +108,10 @@ function RolesContent() {
                           {role.permissions.map((perm) => (
                             <span
                               key={perm}
-                              className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-600"
+                              title={perm}
+                              className="rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-600"
                             >
-                              {perm}
+                              {permissionLabel(perm)}
                             </span>
                           ))}
                         </div>
@@ -248,13 +250,14 @@ function RoleModal({
             <div className="max-h-64 space-y-4 overflow-y-auto rounded-md border border-slate-200 p-3">
               {groups.map(([group, perms]) => (
                 <div key={group}>
-                  <p className="mb-1 text-xs font-semibold uppercase text-slate-400">
-                    {group}
+                  <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                    {permissionGroupLabel(group)}
                   </p>
-                  <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                     {perms.map((perm) => (
                       <label
                         key={perm.id}
+                        title={perm.name}
                         className="flex items-center gap-2 text-sm text-slate-700"
                       >
                         <input
@@ -263,7 +266,7 @@ function RoleModal({
                           onChange={() => toggle(perm.name)}
                           className="h-4 w-4 rounded border-slate-300"
                         />
-                        {perm.name}
+                        {permissionLabel(perm.name)}
                       </label>
                     ))}
                   </div>

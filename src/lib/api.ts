@@ -130,16 +130,27 @@ export function isForbidden(error: unknown): boolean {
   return axios.isAxiosError(error) && error.response?.status === 403;
 }
 
-// Descarga una foto a través del proxy same-origin de Next (evita el CORS de R2)
-// y devuelve un object URL listo para usar como src de imagen.
-export async function fetchFotoObjectUrl(proxyPath: string): Promise<string> {
+export interface BlobPreview {
+  url: string; // object URL del blob (revocar al terminar)
+  type: string; // content-type (ej. "image/png", "application/pdf")
+}
+
+// Descarga un archivo a través del proxy same-origin de Next (evita el CORS de R2)
+// y devuelve un object URL + su content-type para previsualizar/descargar.
+export async function fetchBlobPreview(proxyPath: string): Promise<BlobPreview> {
   const headers: Record<string, string> = {};
   if (accessToken) {
     headers.Authorization = `Bearer ${accessToken}`;
   }
   const res = await fetch(proxyPath, { headers, cache: "no-store" });
   if (!res.ok) {
-    throw new Error(`No se pudo cargar la foto (${res.status}).`);
+    throw new Error(`No se pudo cargar el archivo (${res.status}).`);
   }
-  return URL.createObjectURL(await res.blob());
+  const blob = await res.blob();
+  return { url: URL.createObjectURL(blob), type: blob.type };
+}
+
+// Compat: devuelve solo el object URL (usado como src de <img>).
+export async function fetchFotoObjectUrl(proxyPath: string): Promise<string> {
+  return (await fetchBlobPreview(proxyPath)).url;
 }

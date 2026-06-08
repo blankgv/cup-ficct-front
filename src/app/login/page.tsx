@@ -77,9 +77,12 @@ export default function LoginPage() {
           Ingresar
         </Button>
 
-        <div className="text-center text-sm">
+        <div className="flex flex-col gap-1 text-center text-sm">
           <Link href="/forgot-password" className="text-slate-600 hover:text-slate-900">
             ¿Olvidaste tu contraseña?
+          </Link>
+          <Link href="/registro" className="font-medium text-slate-900 hover:underline">
+            ¿No tenés cuenta? Postulate
           </Link>
         </div>
       </form>

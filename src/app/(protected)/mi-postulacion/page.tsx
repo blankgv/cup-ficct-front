@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Card, PageHeader } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
@@ -7,10 +8,12 @@ import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { Field, TextInput } from "@/components/ui/Field";
 import { FilePreview } from "@/components/ui/FilePreview";
+import { EstadoPagoBadge } from "@/components/payments/EstadoPagoBadge";
 import { useFormErrors } from "@/hooks/useFormErrors";
 import { getErrorMessage, isForbidden } from "@/lib/api";
 import { miPostulanteService } from "@/services/applicant/miPostulante.service";
 import type { Postulante } from "@/lib/applicant";
+import type { Pago } from "@/lib/payments";
 
 interface Form {
   nombres: string;
@@ -28,6 +31,7 @@ function isComplete(p: Postulante): boolean {
 export default function MiPostulacionPage() {
   const { message, handle, reset, fieldError } = useFormErrors();
   const [postulante, setPostulante] = useState<Postulante | null>(null);
+  const [pagos, setPagos] = useState<Pago[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -68,6 +72,11 @@ export default function MiPostulacionPage() {
       const p = await miPostulanteService.get();
       setPostulante(p);
       fill(p);
+      try {
+        setPagos(await miPostulanteService.pagos());
+      } catch {
+        setPagos([]);
+      }
     } catch (e) {
       if (isForbidden(e)) setLoadError(getErrorMessage(e));
       else setNotFound(true);
@@ -266,6 +275,37 @@ export default function MiPostulacionPage() {
           </form>
         </Card>
       </div>
+
+      <Card className="mt-6">
+        <h2 className="mb-3 text-sm font-semibold text-slate-700">Mis pagos</h2>
+        {pagos.length === 0 ? (
+          <p className="text-sm text-slate-500">
+            Todavía no tenés cobros. Cuando verifiquen tu postulación se genera el cobro de
+            inscripción y vas a poder pagarlo en línea.
+          </p>
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {pagos.map((p) => (
+              <li key={p.id} className="flex items-center justify-between gap-3 py-3">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">
+                    {p.concepto} · {p.monto}
+                  </p>
+                  <p className="mt-0.5">
+                    <EstadoPagoBadge estado={p.estado} />
+                  </p>
+                </div>
+                <Link
+                  href={`/payments/pagos/${p.id}`}
+                  className="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                >
+                  {p.estado === "PENDIENTE" ? "Pagar" : "Ver"}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
 
       {preview && (
         <FilePreview

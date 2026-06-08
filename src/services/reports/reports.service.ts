@@ -86,6 +86,23 @@ export async function reporteVoz(
   return data;
 }
 
+// Exporta el resultado del reporte por voz (excel/pdf) como blob.
+export async function reporteVozExport(
+  texto: string,
+  format: ExportFormat,
+): Promise<void> {
+  const res = await api.post(
+    `${REPORTS_BASE}/voz`,
+    { texto, format },
+    { responseType: "blob" },
+  );
+  const ext = format === "excel" ? "xlsx" : "pdf";
+  const filename =
+    filenameFromDisposition(res.headers["content-disposition"]) ??
+    `reporte-voz.${ext}`;
+  triggerDownload(res.data as Blob, filename);
+}
+
 function colIndex(headers: string[], re: RegExp): number {
   return headers.findIndex((h) => re.test(h));
 }

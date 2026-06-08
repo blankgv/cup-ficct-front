@@ -2,36 +2,24 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Alert } from "@/components/ui/Alert";
-import { getErrorMessage } from "@/lib/api";
-import { pagosService } from "@/services/payments/pagos.service";
+import { FilePreview } from "@/components/ui/FilePreview";
 
-// Descarga el recibo (solo si el pago está PAGADO; 302 → URL firmada del PDF).
+// Visor del recibo (PDF). Solo se genera si el pago está PAGADO; si no, el visor
+// muestra el error que devuelve el backend (422).
 export function ReciboButton({ pagoId }: { pagoId: number }) {
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function descargar() {
-    setBusy(true);
-    setError(null);
-    try {
-      const url = await pagosService.reciboUrl(pagoId);
-      window.open(url, "_blank", "noopener,noreferrer");
-    } catch (e) {
-      setError(getErrorMessage(e, "No se pudo descargar el recibo (¿el pago está PAGADO?)."));
-    } finally {
-      setBusy(false);
-    }
-  }
+  const [open, setOpen] = useState(false);
 
   return (
-    <div className="flex flex-col gap-2">
-      {error && <Alert variant="error">{error}</Alert>}
-      <div>
-        <Button onClick={descargar} loading={busy}>
-          Descargar recibo
-        </Button>
-      </div>
+    <div>
+      <Button onClick={() => setOpen(true)}>Ver recibo</Button>
+      {open && (
+        <FilePreview
+          title={`Recibo · Pago #${pagoId}`}
+          proxyPath={`/api/recibo/${pagoId}`}
+          downloadName={`recibo-${pagoId}.pdf`}
+          onClose={() => setOpen(false)}
+        />
+      )}
     </div>
   );
 }

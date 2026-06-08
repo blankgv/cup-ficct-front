@@ -1,4 +1,4 @@
-import { api, fetchFotoObjectUrl } from "@/lib/api";
+import { api } from "@/lib/api";
 import type { DataResponse, MessageResponse, Paginated } from "@/lib/types";
 import type { CargaMasivaResult, Postulante } from "@/lib/applicant";
 
@@ -67,9 +67,5 @@ export const postulantesService = {
       form,
     );
     return data.data;
-  },
-  // Descarga el título vía el proxy same-origin (302 -> URL firmada) como object URL.
-  fetchTituloUrl(documento: string): Promise<string> {
-    return fetchFotoObjectUrl(`/api/titulo/${documento}`);
   },
 };

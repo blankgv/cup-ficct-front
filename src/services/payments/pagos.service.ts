@@ -1,4 +1,4 @@
-import { api, fetchFotoObjectUrl } from "@/lib/api";
+import { api } from "@/lib/api";
 import type { DataResponse, MessageResponse, Paginated } from "@/lib/types";
 import type { Gateway, MetodoPago, Pago } from "@/lib/payments";
 
@@ -66,9 +66,5 @@ export const pagosService = {
       { params: gateway ? { gateway } : undefined },
     );
     return data.url;
-  },
-  // Recibo (solo PAGADO): 302 → URL firmada del PDF, vía proxy same-origin.
-  reciboUrl(id: number): Promise<string> {
-    return fetchFotoObjectUrl(`/api/recibo/${id}`);
   },
 };

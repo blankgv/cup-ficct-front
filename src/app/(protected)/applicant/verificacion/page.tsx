@@ -20,14 +20,8 @@ import {
   APPLICANT_VERIFY,
   ESTADOS_POSTULACION,
   type Convocatoria,
-  type EstadoPostulacion,
 } from "@/lib/applicant";
-
-const ESTADO_STYLE: Record<EstadoPostulacion, string> = {
-  PENDIENTE: "bg-amber-100 text-amber-700",
-  VERIFICADO: "bg-green-100 text-green-700",
-  RECHAZADO: "bg-red-100 text-red-700",
-};
+import { EstadoPostulacionBadge } from "@/components/applicant/EstadoPostulacionBadge";
 
 function RechazarModal({
   documento,
@@ -225,11 +219,7 @@ function VerificacionContent() {
                     <td className="px-4 py-3">{r.segunda}</td>
                     <td className="px-4 py-3">{r.turno ?? "—"}</td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${ESTADO_STYLE[r.estado]}`}
-                      >
-                        {r.estado}
-                      </span>
+                      <EstadoPostulacionBadge estado={r.estado} />
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap justify-end gap-2">

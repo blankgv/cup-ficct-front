@@ -16,6 +16,33 @@ export interface CompletarPerfilPayload {
   ciudad?: string;
 }
 
+export interface ConvocatoriaAbierta {
+  id: number;
+  nombre: string;
+  gestion: string;
+  carreras: { codigo: string; nombre: string }[];
+}
+
+export interface MiPostulacion {
+  convocatoria_id: number;
+  convocatoria: string | null;
+  gestion: string | null;
+  carrera_primera: string;
+  carrera_primera_nombre: string;
+  carrera_segunda: string;
+  carrera_segunda_nombre: string;
+  turno_preferencia: string | null;
+  estado: "PENDIENTE" | "VERIFICADO" | "RECHAZADO";
+  observacion: string | null;
+}
+
+export interface CrearPostulacionPayload {
+  convocatoria_id: number;
+  carrera_primera_codigo: string;
+  carrera_segunda_codigo: string;
+  turno_preferencia: string;
+}
+
 export const miPostulanteService = {
   // Datos del propio postulante (404 si el usuario no es postulante).
   async get(): Promise<Postulante> {
@@ -46,5 +73,19 @@ export const miPostulanteService = {
   async asistencia(): Promise<ReporteAsistencia> {
     const { data } = await api.get<ReporteAsistencia>(`${base}/asistencia`);
     return data;
+  },
+  // Convocatorias abiertas (con sus carreras) para postularme.
+  async convocatoriasAbiertas(): Promise<ConvocatoriaAbierta[]> {
+    const { data } = await api.get<ConvocatoriaAbierta[]>(`${base}/convocatorias`);
+    return data;
+  },
+  // Mis postulaciones (estado, carreras, turno).
+  async postulaciones(): Promise<MiPostulacion[]> {
+    const { data } = await api.get<MiPostulacion[]>(`${base}/postulaciones`);
+    return data;
+  },
+  // Crear mi postulación (queda PENDIENTE de verificación).
+  async crearPostulacion(payload: CrearPostulacionPayload): Promise<void> {
+    await api.post(`${base}/postulaciones`, payload);
   },
 };

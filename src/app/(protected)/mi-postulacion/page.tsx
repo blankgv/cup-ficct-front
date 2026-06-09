@@ -9,6 +9,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { Field, TextInput } from "@/components/ui/Field";
 import { FilePreview } from "@/components/ui/FilePreview";
 import { EstadoPagoBadge } from "@/components/payments/EstadoPagoBadge";
+import { MiPostulacionForm } from "@/components/applicant/MiPostulacionForm";
 import { useFormErrors } from "@/hooks/useFormErrors";
 import { getErrorMessage, isForbidden } from "@/lib/api";
 import { miPostulanteService } from "@/services/applicant/miPostulante.service";
@@ -275,6 +276,8 @@ export default function MiPostulacionPage() {
           </form>
         </Card>
       </div>
+
+      <MiPostulacionForm disabled={!complete} />
 
       <Card className="mt-6">
         <h2 className="mb-3 text-sm font-semibold text-slate-700">Mis pagos</h2>

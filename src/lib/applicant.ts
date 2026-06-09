@@ -61,6 +61,8 @@ export interface CargaMasivaResult {
   creados: number;
   omitidos: number;
   errores: string[] | Record<string, unknown>[];
+  titulos_subidos?: number;
+  titulos_sin_match?: string[];
 }
 
 export interface GenerarGruposResult {

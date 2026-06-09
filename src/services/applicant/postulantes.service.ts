@@ -51,10 +51,11 @@ export const postulantesService = {
     const { data } = await api.delete<MessageResponse>(`${base}/${documento}`);
     return data;
   },
-  // Carga masiva: CSV/Excel multipart. Devuelve resumen plano.
-  async lote(file: File): Promise<CargaMasivaResult> {
+  // Carga masiva: CSV/Excel + ZIP opcional de títulos. Devuelve resumen plano.
+  async lote(file: File, titulos?: File | null): Promise<CargaMasivaResult> {
     const form = new FormData();
     form.append("archivo", file);
+    if (titulos) form.append("titulos", titulos);
     const { data } = await api.post<CargaMasivaResult>(`${base}/lote`, form);
     return data;
   },

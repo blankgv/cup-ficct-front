@@ -61,11 +61,19 @@ export function CargaMasivaModal({
               <p className="text-slate-500">Errores</p>
             </div>
           </div>
-          {typeof result.titulos_subidos === "number" && (
-            <p className="text-sm text-slate-600">
-              Títulos subidos: <strong className="text-slate-900">{result.titulos_subidos}</strong>
-            </p>
-          )}
+          <div className="space-y-1 text-sm text-slate-600">
+            {typeof result.postulaciones === "number" && (
+              <p>
+                Postulaciones verificadas (con cobro de inscripción):{" "}
+                <strong className="text-slate-900">{result.postulaciones}</strong>
+              </p>
+            )}
+            {typeof result.titulos_subidos === "number" && (
+              <p>
+                Títulos subidos: <strong className="text-slate-900">{result.titulos_subidos}</strong>
+              </p>
+            )}
+          </div>
           {errores.length > 0 && (
             <div className="max-h-48 overflow-y-auto rounded-lg border border-slate-200 p-3 text-sm">
               <ul className="list-disc space-y-1 pl-5 text-slate-600">
@@ -93,9 +101,21 @@ export function CargaMasivaModal({
         <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
           {error && <Alert variant="error">{error}</Alert>}
           <p className="text-sm text-slate-600">
-            Archivo CSV o Excel (máx. 5 MB). Se crea una cuenta de usuario (rol POSTULANTE)
-            por cada postulante cargado.
+            Archivo CSV o Excel (máx. 5 MB). Cada fila crea el postulante + su cuenta
+            (rol POSTULANTE) y su postulación <strong>ya verificada</strong>, que genera el
+            cobro de inscripción.
           </p>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
+            <p className="mb-1 font-medium text-slate-700">Columnas (encabezado en la 1ª fila):</p>
+            <code className="block break-words text-slate-800">
+              documento, nombres, apellidos, email, fecha_nacimiento, colegio, ciudad,
+              telefono, convocatoria, turno, carrera_primera, carrera_segunda
+            </code>
+            <p className="mt-1.5">
+              convocatoria = nombre o id · turno = MANANA/TARDE/NOCHE · carreras = código
+              (ej. 183-01) o nombre.
+            </p>
+          </div>
           <input
             ref={inputRef}
             type="file"

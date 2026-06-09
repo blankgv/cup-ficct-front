@@ -61,6 +61,7 @@ export interface CargaMasivaResult {
   creados: number;
   omitidos: number;
   errores: string[] | Record<string, unknown>[];
+  postulaciones?: number;
   titulos_subidos?: number;
   titulos_sin_match?: string[];
 }

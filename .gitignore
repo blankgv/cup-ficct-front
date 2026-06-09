@@ -27,3 +27,6 @@ yarn-error.log*
 Thumbs.db
 .idea
 .vscode
+
+# Claude local settings
+.claude/

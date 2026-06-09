@@ -1,17 +1,28 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { gruposService } from "@/services/academic/grupos.service";
-import { grupoMateriasService } from "@/services/academic/grupoMaterias.service";
-import { estudiantesPorGrupo, type RosterRow } from "@/services/reports/reports.service";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { notasService, type MiGrupoMateria, type RosterRow } from "@/services/evaluation/notas.service";
 import { getErrorMessage } from "@/lib/api";
-import type { Grupo, GrupoMateria } from "@/lib/academic";
+
+// Grupo visible en las planillas (derivado de las asignaciones del usuario).
+export interface RosterGrupo {
+  id: number;
+  codigo: string;
+  turno: string;
+  gestion: string;
+  convocatoria_id: number | null;
+}
+
+export interface RosterMateria {
+  sigla: string;
+  nombre: string;
+}
 
 // Estado compartido por las planillas: grupo → materia del grupo → roster de inscritos.
+// Los grupos/materias se limitan a lo asignado al usuario (docente: lo suyo; staff: todo).
 export function useGrupoRoster() {
-  const [grupos, setGrupos] = useState<Grupo[]>([]);
-  const [grupo, setGrupo] = useState<Grupo | null>(null);
-  const [materias, setMaterias] = useState<GrupoMateria[]>([]);
+  const [asignaciones, setAsignaciones] = useState<MiGrupoMateria[]>([]);
+  const [grupo, setGrupo] = useState<RosterGrupo | null>(null);
   const [materia, setMateria] = useState<string>("");
   const [roster, setRoster] = useState<RosterRow[]>([]);
 
@@ -20,28 +31,47 @@ export function useGrupoRoster() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    gruposService
-      .list()
-      .then(setGrupos)
+    notasService
+      .misGrupos()
+      .then(setAsignaciones)
       .catch((e) => setError(getErrorMessage(e)))
       .finally(() => setLoadingGrupos(false));
   }, []);
 
-  const selectGrupo = useCallback(async (g: Grupo | null) => {
+  // Grupos únicos a partir de las asignaciones.
+  const grupos = useMemo<RosterGrupo[]>(() => {
+    const map = new Map<number, RosterGrupo>();
+    for (const a of asignaciones) {
+      if (!map.has(a.grupo_id)) {
+        map.set(a.grupo_id, {
+          id: a.grupo_id,
+          codigo: a.grupo_codigo,
+          turno: a.turno,
+          gestion: a.gestion,
+          convocatoria_id: a.convocatoria_id,
+        });
+      }
+    }
+    return Array.from(map.values());
+  }, [asignaciones]);
+
+  // Materias de cada grupo (solo las asignadas al usuario).
+  const materias = useMemo<RosterMateria[]>(() => {
+    if (!grupo) return [];
+    return asignaciones
+      .filter((a) => a.grupo_id === grupo.id)
+      .map((a) => ({ sigla: a.materia_sigla, nombre: a.materia_nombre }));
+  }, [asignaciones, grupo]);
+
+  const selectGrupo = useCallback(async (g: RosterGrupo | null) => {
     setGrupo(g);
     setMateria("");
-    setMaterias([]);
     setRoster([]);
     if (!g) return;
     setLoadingDetail(true);
     setError(null);
     try {
-      const [mats, ros] = await Promise.all([
-        grupoMateriasService.list(g.id),
-        estudiantesPorGrupo(g.gestion, g.id),
-      ]);
-      setMaterias(mats);
-      setRoster(ros);
+      setRoster(await notasService.estudiantesGrupo(g.id));
     } catch (e) {
       setError(getErrorMessage(e));
     } finally {

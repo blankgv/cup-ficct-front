@@ -15,14 +15,22 @@ interface FieldProps {
 // Etiqueta + control + error de validación (pintado bajo el input).
 export function Field({ label, htmlFor, error, children }: FieldProps) {
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={htmlFor} className="text-sm font-medium text-slate-700">
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={htmlFor} className="text-sm font-medium text-slate-600">
         {label}
       </label>
       {children}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );
+}
+
+// Base común de los controles (estética minimalista, foco sutil).
+const controlBase =
+  "w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-900/10 disabled:bg-slate-50 disabled:text-slate-400";
+
+function borderClass(invalid: boolean): string {
+  return invalid ? "border-red-300 focus:ring-red-500/10" : "border-slate-200";
 }
 
 interface TextInputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -31,12 +39,7 @@ interface TextInputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 export function TextInput({ invalid = false, className = "", ...props }: TextInputProps) {
   return (
-    <input
-      {...props}
-      className={`w-full rounded-md border bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100 ${
-        invalid ? "border-red-400" : "border-slate-300"
-      } ${className}`}
-    />
+    <input {...props} className={`${controlBase} ${borderClass(invalid)} ${className}`} />
   );
 }
 
@@ -46,12 +49,7 @@ interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
 
 export function TextArea({ invalid = false, className = "", ...props }: TextAreaProps) {
   return (
-    <textarea
-      {...props}
-      className={`w-full rounded-md border bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100 ${
-        invalid ? "border-red-400" : "border-slate-300"
-      } ${className}`}
-    />
+    <textarea {...props} className={`${controlBase} ${borderClass(invalid)} ${className}`} />
   );
 }
 
@@ -66,12 +64,7 @@ export function SelectInput({
   ...props
 }: SelectInputProps) {
   return (
-    <select
-      {...props}
-      className={`w-full rounded-md border bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100 ${
-        invalid ? "border-red-400" : "border-slate-300"
-      } ${className}`}
-    >
+    <select {...props} className={`${controlBase} ${borderClass(invalid)} ${className}`}>
       {children}
     </select>
   );

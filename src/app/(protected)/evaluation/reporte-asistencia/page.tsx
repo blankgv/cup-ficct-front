@@ -1,33 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { RequirePermission } from "@/components/RequirePermission";
 import { Card, PageHeader } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { Field, SelectInput } from "@/components/ui/Field";
+import { useGrupoRoster } from "@/hooks/useGrupoRoster";
 import { getErrorMessage } from "@/lib/api";
 import { asistenciasService } from "@/services/evaluation/asistencias.service";
-import { convocatoriasService } from "@/services/applicant/convocatorias.service";
-import { postulantesService } from "@/services/applicant/postulantes.service";
 import { ATTENDANCE_MANAGE, type ReporteAsistencia } from "@/lib/evaluation";
-import type { Convocatoria, Postulante } from "@/lib/applicant";
 
 function ReporteContent() {
-  const [convocatorias, setConvocatorias] = useState<Convocatoria[]>([]);
-  const [postulantes, setPostulantes] = useState<Postulante[]>([]);
-  const [convId, setConvId] = useState("");
+  const { grupos, grupo, selectGrupo, roster, loadingGrupos, loadingDetail, error: rosterError } =
+    useGrupoRoster();
   const [documento, setDocumento] = useState("");
+  const convId = grupo?.convocatoria_id ? String(grupo.convocatoria_id) : "";
 
   const [reporte, setReporte] = useState<ReporteAsistencia | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    convocatoriasService.list().then(setConvocatorias).catch(() => setConvocatorias([]));
-    postulantesService.list().then(setPostulantes).catch(() => setPostulantes([]));
-  }, []);
 
   async function consultar() {
     if (!convId || !documento) return;
@@ -45,29 +38,37 @@ function ReporteContent() {
 
   return (
     <div>
-      <PageHeader
-        title="Reporte de asistencia"
-        description="Porcentaje por materia y global. HABILITADO si la asistencia global ≥ 80%."
-      />
+      <PageHeader title="Reporte de asistencia" />
 
       <Card className="mb-4">
         <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="Convocatoria">
-            <SelectInput value={convId} onChange={(e) => setConvId(e.target.value)}>
-              <option value="">Seleccioná…</option>
-              {convocatorias.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nombre} ({c.gestion})
+          <Field label="Grupo">
+            <SelectInput
+              value={grupo?.id ?? ""}
+              onChange={(e) => {
+                setDocumento("");
+                selectGrupo(grupos.find((g) => g.id === Number(e.target.value)) ?? null);
+              }}
+              disabled={loadingGrupos}
+            >
+              <option value="">{loadingGrupos ? "Cargando…" : "Seleccioná un grupo…"}</option>
+              {grupos.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.codigo} · {g.turno} · {g.gestion}
                 </option>
               ))}
             </SelectInput>
           </Field>
-          <Field label="Postulante">
-            <SelectInput value={documento} onChange={(e) => setDocumento(e.target.value)}>
+          <Field label="Estudiante">
+            <SelectInput
+              value={documento}
+              onChange={(e) => setDocumento(e.target.value)}
+              disabled={!grupo || loadingDetail}
+            >
               <option value="">Seleccioná…</option>
-              {postulantes.map((p) => (
-                <option key={p.documento} value={p.documento}>
-                  {p.documento} — {p.nombres} {p.apellidos}
+              {roster.map((r) => (
+                <option key={r.documento} value={r.documento}>
+                  {r.documento} — {r.nombre}
                 </option>
               ))}
             </SelectInput>
@@ -79,6 +80,8 @@ function ReporteContent() {
           </div>
         </div>
       </Card>
+
+      {rosterError && <Alert variant="error">{rosterError}</Alert>}
 
       {error && <Alert variant="error">{error}</Alert>}
 

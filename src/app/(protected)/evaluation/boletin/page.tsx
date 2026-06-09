@@ -1,33 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { RequirePermission } from "@/components/RequirePermission";
 import { Card, PageHeader } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { Field, SelectInput } from "@/components/ui/Field";
+import { useGrupoRoster } from "@/hooks/useGrupoRoster";
 import { getErrorMessage } from "@/lib/api";
 import { notasService } from "@/services/evaluation/notas.service";
-import { convocatoriasService } from "@/services/applicant/convocatorias.service";
-import { postulantesService } from "@/services/applicant/postulantes.service";
 import { GRADE_MANAGE, type Boletin } from "@/lib/evaluation";
-import type { Convocatoria, Postulante } from "@/lib/applicant";
 
 function BoletinContent() {
-  const [convocatorias, setConvocatorias] = useState<Convocatoria[]>([]);
-  const [postulantes, setPostulantes] = useState<Postulante[]>([]);
-  const [convId, setConvId] = useState("");
+  const { grupos, grupo, selectGrupo, roster, loadingGrupos, loadingDetail, error: rosterError } =
+    useGrupoRoster();
   const [documento, setDocumento] = useState("");
+  const convId = grupo?.convocatoria_id ? String(grupo.convocatoria_id) : "";
 
   const [boletin, setBoletin] = useState<Boletin | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    convocatoriasService.list().then(setConvocatorias).catch(() => setConvocatorias([]));
-    postulantesService.list().then(setPostulantes).catch(() => setPostulantes([]));
-  }, []);
 
   async function consultar() {
     if (!convId || !documento) return;
@@ -45,29 +38,37 @@ function BoletinContent() {
 
   return (
     <div>
-      <PageHeader
-        title="Boletín de notas"
-        description="Promedio por materia, promedio final ponderado por peso y estado (APROBADO si el final ≥ 60)."
-      />
+      <PageHeader title="Boletín de notas" />
 
       <Card className="mb-4">
         <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="Convocatoria">
-            <SelectInput value={convId} onChange={(e) => setConvId(e.target.value)}>
-              <option value="">Seleccioná…</option>
-              {convocatorias.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nombre} ({c.gestion})
+          <Field label="Grupo">
+            <SelectInput
+              value={grupo?.id ?? ""}
+              onChange={(e) => {
+                setDocumento("");
+                selectGrupo(grupos.find((g) => g.id === Number(e.target.value)) ?? null);
+              }}
+              disabled={loadingGrupos}
+            >
+              <option value="">{loadingGrupos ? "Cargando…" : "Seleccioná un grupo…"}</option>
+              {grupos.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.codigo} · {g.turno} · {g.gestion}
                 </option>
               ))}
             </SelectInput>
           </Field>
-          <Field label="Postulante">
-            <SelectInput value={documento} onChange={(e) => setDocumento(e.target.value)}>
+          <Field label="Estudiante">
+            <SelectInput
+              value={documento}
+              onChange={(e) => setDocumento(e.target.value)}
+              disabled={!grupo || loadingDetail}
+            >
               <option value="">Seleccioná…</option>
-              {postulantes.map((p) => (
-                <option key={p.documento} value={p.documento}>
-                  {p.documento} — {p.nombres} {p.apellidos}
+              {roster.map((r) => (
+                <option key={r.documento} value={r.documento}>
+                  {r.documento} — {r.nombre}
                 </option>
               ))}
             </SelectInput>
@@ -80,6 +81,7 @@ function BoletinContent() {
         </div>
       </Card>
 
+      {rosterError && <Alert variant="error">{rosterError}</Alert>}
       {error && <Alert variant="error">{error}</Alert>}
 
       {loading ? (
@@ -125,7 +127,7 @@ function BoletinContent() {
                       <span className="font-medium text-slate-900">{m.sigla}</span>
                       <span className="text-slate-500"> — {m.nombre}</span>
                     </td>
-                    <td className="px-4 py-3">{m.peso}</td>
+                    <td className="px-4 py-3">{+(m.peso * 100).toFixed(2)}%</td>
                     <td className="px-4 py-3">
                       {m.examenes.length === 0
                         ? "—"
@@ -145,7 +147,7 @@ function BoletinContent() {
       ) : (
         <Card>
           <p className="text-center text-sm text-slate-500">
-            Elegí convocatoria y postulante para ver el boletín.
+            Elegí un grupo y un estudiante para ver el boletín.
           </p>
         </Card>
       )}

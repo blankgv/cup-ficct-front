@@ -1,11 +1,106 @@
 import { api } from "@/lib/api";
 import type { EstadoPostulacion, TurnoPreferencia } from "@/lib/applicant";
+import type {
+  ExportFormat,
+  Reporte,
+  ReporteVoz,
+  ReportFormat,
+} from "@/lib/reports";
+
+const REPORTS_BASE = "/reports";
 
 // Reporte genérico del backend: { titulo, headers, rows: string[][] }.
 interface ReportResponse {
   titulo: string;
   headers: string[];
   rows: string[][];
+}
+
+export type ReportParams = Record<string, string | number | undefined | null>;
+
+// Quita filtros vacíos para no mandarlos en la query.
+function cleanParams(params: ReportParams): Record<string, string | number> {
+  const out: Record<string, string | number> = {};
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== null && v !== "") out[k] = v;
+  }
+  return out;
+}
+
+// Reporte en JSON (tabla). path relativo a /reports (ej. "/estudiantes-por-grupo").
+export async function fetchReporte(
+  path: string,
+  params: ReportParams = {},
+): Promise<Reporte> {
+  const { data } = await api.get<Reporte>(`${REPORTS_BASE}${path}`, {
+    params: { ...cleanParams(params), format: "json" },
+  });
+  return data;
+}
+
+// Nombre de archivo desde Content-Disposition (o fallback).
+function filenameFromDisposition(disposition?: string): string | null {
+  if (!disposition) return null;
+  const match = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(disposition);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function triggerDownload(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+// Exporta el reporte (excel/pdf) como blob con Bearer y dispara la descarga.
+export async function exportReporte(
+  path: string,
+  params: ReportParams,
+  format: ExportFormat,
+  fallbackName: string,
+): Promise<void> {
+  const res = await api.get(`${REPORTS_BASE}${path}`, {
+    params: { ...cleanParams(params), format },
+    responseType: "blob",
+  });
+  const ext = format === "excel" ? "xlsx" : "pdf";
+  const filename =
+    filenameFromDisposition(res.headers["content-disposition"]) ??
+    `${fallbackName}.${ext}`;
+  triggerDownload(res.data as Blob, filename);
+}
+
+// Reporte por voz: el front manda el texto transcrito; la IA elige reporte y filtros.
+export async function reporteVoz(
+  texto: string,
+  format: ReportFormat = "json",
+): Promise<ReporteVoz> {
+  const { data } = await api.post<ReporteVoz>(`${REPORTS_BASE}/voz`, {
+    texto,
+    format,
+  });
+  return data;
+}
+
+// Exporta el resultado del reporte por voz (excel/pdf) como blob.
+export async function reporteVozExport(
+  texto: string,
+  format: ExportFormat,
+): Promise<void> {
+  const res = await api.post(
+    `${REPORTS_BASE}/voz`,
+    { texto, format },
+    { responseType: "blob" },
+  );
+  const ext = format === "excel" ? "xlsx" : "pdf";
+  const filename =
+    filenameFromDisposition(res.headers["content-disposition"]) ??
+    `reporte-voz.${ext}`;
+  triggerDownload(res.data as Blob, filename);
 }
 
 function colIndex(headers: string[], re: RegExp): number {

@@ -25,22 +25,7 @@ import {
   type Postulacion,
   type TurnoPreferencia,
 } from "@/lib/applicant";
-
-const ESTADO_STYLE: Record<EstadoPostulacion, string> = {
-  PENDIENTE: "bg-amber-100 text-amber-700",
-  VERIFICADO: "bg-green-100 text-green-700",
-  RECHAZADO: "bg-red-100 text-red-700",
-};
-
-function EstadoBadge({ estado }: { estado: EstadoPostulacion }) {
-  return (
-    <span
-      className={`rounded-full px-2 py-0.5 text-xs font-medium ${ESTADO_STYLE[estado]}`}
-    >
-      {estado}
-    </span>
-  );
-}
+import { EstadoPostulacionBadge } from "@/components/applicant/EstadoPostulacionBadge";
 
 function NuevaPostulacionModal({
   documento,
@@ -433,7 +418,7 @@ function PostulacionesContent({ documento }: { documento: string }) {
                     <td className="px-4 py-3">{p.carrera_segunda_codigo}</td>
                     <td className="px-4 py-3">{p.turno_preferencia ?? "—"}</td>
                     <td className="px-4 py-3">
-                      <EstadoBadge estado={p.estado} />
+                      <EstadoPostulacionBadge estado={p.estado} />
                       {p.estado === "RECHAZADO" && p.observacion && (
                         <p className="mt-1 text-xs text-slate-500">{p.observacion}</p>
                       )}

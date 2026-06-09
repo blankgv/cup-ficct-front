@@ -1,11 +1,12 @@
-import { ESTADO_PAGO_STYLE, type EstadoPago } from "@/lib/payments";
+import { Badge, type BadgeTone } from "@/components/ui/Badge";
+import type { EstadoPago } from "@/lib/payments";
+
+const TONE: Record<EstadoPago, BadgeTone> = {
+  PENDIENTE: "warning",
+  PAGADO: "success",
+  RECHAZADO: "danger",
+};
 
 export function EstadoPagoBadge({ estado }: { estado: EstadoPago }) {
-  return (
-    <span
-      className={`rounded-full px-2 py-0.5 text-xs font-medium ${ESTADO_PAGO_STYLE[estado]}`}
-    >
-      {estado}
-    </span>
-  );
+  return <Badge tone={TONE[estado]}>{estado}</Badge>;
 }

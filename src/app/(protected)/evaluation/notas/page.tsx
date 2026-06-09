@@ -10,14 +10,12 @@ import { Field, SelectInput, TextInput } from "@/components/ui/Field";
 import { useGrupoRoster } from "@/hooks/useGrupoRoster";
 import { getErrorMessage, getValidationErrors } from "@/lib/api";
 import { notasService } from "@/services/evaluation/notas.service";
-import { convocatoriasService } from "@/services/applicant/convocatorias.service";
 import {
   NotaIndividualModal,
   type NotaPrefill,
 } from "@/components/evaluation/NotaIndividualModal";
 import { GRADE_MANAGE } from "@/lib/evaluation";
 import { collectColumn, maxExamNumber, type Grid } from "@/lib/notasGrid";
-import type { Convocatoria } from "@/lib/applicant";
 
 interface SaveResult {
   guardadas: number;
@@ -39,8 +37,8 @@ function PlanillaNotasContent() {
     error,
   } = useGrupoRoster();
 
-  const [convocatorias, setConvocatorias] = useState<Convocatoria[]>([]);
-  const [convId, setConvId] = useState("");
+  // Convocatoria derivada del grupo seleccionado (para precargar/guardar notas).
+  const convId = grupo?.convocatoria_id ? String(grupo.convocatoria_id) : "";
 
   // Columnas de exámenes (1..numExams) y celdas.
   const [numExams, setNumExams] = useState(1);
@@ -52,10 +50,6 @@ function PlanillaNotasContent() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [fieldErr, setFieldErr] = useState<Record<string, string[]>>({});
   const [individual, setIndividual] = useState<NotaPrefill | null>(null);
-
-  useEffect(() => {
-    convocatoriasService.list().then(setConvocatorias).catch(() => setConvocatorias([]));
-  }, []);
 
   const exams = useMemo(
     () => Array.from({ length: numExams }, (_, i) => i + 1),
@@ -152,7 +146,7 @@ function PlanillaNotasContent() {
       />
 
       <Card className="mb-4">
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Grupo">
             <SelectInput
               value={grupo?.id ?? ""}
@@ -179,16 +173,6 @@ function PlanillaNotasContent() {
               {materias.map((m) => (
                 <option key={m.sigla} value={m.sigla}>
                   {m.sigla} — {m.nombre}
-                </option>
-              ))}
-            </SelectInput>
-          </Field>
-          <Field label="Convocatoria (para ver notas cargadas)">
-            <SelectInput value={convId} onChange={(e) => setConvId(e.target.value)}>
-              <option value="">Sin precarga</option>
-              {convocatorias.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nombre} ({c.gestion})
                 </option>
               ))}
             </SelectInput>

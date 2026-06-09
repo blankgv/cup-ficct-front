@@ -5,6 +5,7 @@ import { useState } from "react";
 import { RequirePermission } from "@/components/RequirePermission";
 import { EntityManager } from "@/components/academic/EntityManager";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 import { Field, SelectInput, TextInput } from "@/components/ui/Field";
 import { ProcesosModal } from "@/components/applicant/ProcesosModal";
 import { useCan } from "@/hooks/useAuth";
@@ -52,15 +53,9 @@ function ConvocatoriasContent() {
           {
             header: "Estado",
             render: (c) => (
-              <span
-                className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                  c.estado === "ABIERTA"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-slate-200 text-slate-600"
-                }`}
-              >
+              <Badge tone={c.estado === "ABIERTA" ? "success" : "neutral"}>
                 {c.estado}
-              </span>
+              </Badge>
             ),
           },
         ]}
@@ -81,7 +76,7 @@ function ConvocatoriasContent() {
           <>
             <Link
               href={`/applicant/convocatorias/${c.id}/cupos`}
-              className="inline-flex items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-lg bg-white px-3.5 py-2 text-sm font-medium text-slate-700 ring-1 ring-inset ring-slate-200 transition-colors hover:bg-slate-50 hover:text-slate-900"
             >
               Cupos
             </Link>

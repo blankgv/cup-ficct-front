@@ -15,20 +15,22 @@ export default function DashboardPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
-          <p className="text-sm text-slate-500">Rol</p>
-          <p className="mt-1 text-lg font-semibold text-slate-900">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Rol</p>
+          <p className="mt-1.5 text-lg font-semibold tracking-tight text-slate-900">
             {user?.role ?? "—"}
           </p>
         </Card>
         <Card>
-          <p className="text-sm text-slate-500">Correo</p>
-          <p className="mt-1 truncate text-lg font-semibold text-slate-900">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Correo</p>
+          <p className="mt-1.5 truncate text-lg font-semibold tracking-tight text-slate-900">
             {user?.email}
           </p>
         </Card>
         <Card>
-          <p className="text-sm text-slate-500">Permisos</p>
-          <p className="mt-1 text-lg font-semibold text-slate-900">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+            Permisos
+          </p>
+          <p className="mt-1.5 text-lg font-semibold tracking-tight text-slate-900">
             {user?.permissions.length ?? 0}
           </p>
         </Card>

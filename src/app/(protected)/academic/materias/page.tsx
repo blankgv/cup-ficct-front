@@ -14,27 +14,33 @@ interface Form {
 
 const EMPTY: Form = { sigla: "", nombre: "", peso: "" };
 
+// 0–1 ↔ porcentaje legible (0.25 ↔ 25%).
+const toPct = (v: number) => `${+(v * 100).toFixed(2)}%`;
+
 export default function MateriasPage() {
   return (
     <RequirePermission permission={ACADEMIC_PERMISSION}>
       <EntityManager<Materia, Form>
         title="Materias"
-        description="El peso va de 0 a 1; la suma de todas debería dar 1.00."
         createLabel="Nueva materia"
         rowKey={(m) => m.sigla}
         columns={[
           { header: "Sigla", render: (m) => m.sigla },
           { header: "Nombre", render: (m) => m.nombre },
-          { header: "Peso", render: (m) => m.peso.toFixed(2) },
+          { header: "Peso", render: (m) => toPct(m.peso) },
         ]}
         fetchAll={materiasService.list}
         emptyForm={EMPTY}
-        toForm={(m) => ({ sigla: m.sigla, nombre: m.nombre, peso: String(m.peso) })}
+        toForm={(m) => ({ sigla: m.sigla, nombre: m.nombre, peso: String(+(m.peso * 100).toFixed(2)) })}
         create={(f) =>
-          materiasService.create({ sigla: f.sigla, nombre: f.nombre, peso: Number(f.peso) })
+          materiasService.create({
+            sigla: f.sigla,
+            nombre: f.nombre,
+            peso: Number(f.peso) / 100,
+          })
         }
         update={(row, f) =>
-          materiasService.update(row.sigla, { nombre: f.nombre, peso: Number(f.peso) })
+          materiasService.update(row.sigla, { nombre: f.nombre, peso: Number(f.peso) / 100 })
         }
         remove={(row) => materiasService.remove(row.sigla)}
         describe={(m) => `${m.sigla} — ${m.nombre}`}
@@ -42,9 +48,9 @@ export default function MateriasPage() {
           const total = rows.reduce((acc, m) => acc + m.peso, 0);
           const ok = Math.abs(total - 1) < 0.001;
           return (
-            <span className={ok ? "text-green-700" : "text-amber-700"}>
-              Suma de pesos: <strong>{total.toFixed(2)}</strong>
-              {ok ? " ✓" : " (debería ser 1.00)"}
+            <span className={ok ? "text-emerald-700" : "text-amber-700"}>
+              Suma de pesos: <strong>{toPct(total)}</strong>
+              {ok ? " ✓" : " (debería ser 100%)"}
             </span>
           );
         }}
@@ -67,12 +73,12 @@ export default function MateriasPage() {
                 required
               />
             </Field>
-            <Field label="Peso (0 a 1)" error={fieldError("peso")}>
+            <Field label="Peso (%)" error={fieldError("peso")}>
               <TextInput
                 type="number"
-                step="0.01"
+                step="1"
                 min="0"
-                max="1"
+                max="100"
                 value={values.peso}
                 onChange={(e) => set("peso", e.target.value)}
                 invalid={Boolean(fieldError("peso"))}

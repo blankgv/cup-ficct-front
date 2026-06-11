@@ -3,10 +3,12 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useFormErrors } from "@/hooks/useFormErrors";
 import { getErrorMessage } from "@/lib/api";
+import type { Paginated, PaginationMeta } from "@/lib/types";
 import { Card, PageHeader } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
+import { Pagination } from "@/components/ui/Pagination";
 import { Spinner } from "@/components/ui/Spinner";
 
 export interface Column<T> {
@@ -26,7 +28,9 @@ export interface EntityManagerProps<T, F> {
   description?: string;
   columns: Column<T>[];
   rowKey: (row: T) => string | number;
-  fetchAll: () => Promise<T[]>;
+  fetchAll?: () => Promise<T[]>;
+  // Si se define, la tabla pagina en servidor e ignora fetchAll.
+  fetchPage?: (page: number) => Promise<Paginated<T>>;
   emptyForm: F;
   toForm: (row: T) => F;
   renderForm: (args: FormRenderArgs<F>) => ReactNode;
@@ -49,6 +53,7 @@ export function EntityManager<T, F>(props: EntityManagerProps<T, F>) {
     columns,
     rowKey,
     fetchAll,
+    fetchPage,
     emptyForm,
     toForm,
     renderForm,
@@ -64,6 +69,8 @@ export function EntityManager<T, F>(props: EntityManagerProps<T, F>) {
   } = props;
 
   const [rows, setRows] = useState<T[]>([]);
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -82,13 +89,24 @@ export function EntityManager<T, F>(props: EntityManagerProps<T, F>) {
     setLoading(true);
     setLoadError(null);
     try {
-      setRows(await fetchAll());
+      if (fetchPage) {
+        const res = await fetchPage(page);
+        // Si la página quedó vacía (ej. tras borrar el último registro), retroceder.
+        if (res.meta && page > res.meta.last_page) {
+          setPage(Math.max(1, res.meta.last_page));
+          return;
+        }
+        setRows(res.data);
+        setMeta(res.meta ?? null);
+      } else if (fetchAll) {
+        setRows(await fetchAll());
+      }
     } catch (error) {
       setLoadError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
-  }, [fetchAll]);
+  }, [fetchAll, fetchPage, page]);
 
   useEffect(() => {
     void load();
@@ -208,6 +226,10 @@ export function EntityManager<T, F>(props: EntityManagerProps<T, F>) {
               </tbody>
             </table>
           </div>
+        )}
+
+        {!loading && meta && (
+          <Pagination meta={meta} onPageChange={setPage} disabled={loading} />
         )}
 
         {!loading && summary && (

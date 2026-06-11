@@ -20,14 +20,20 @@ export interface PostulantePayload {
 export interface ListParams {
   search?: string;
   per_page?: number;
+  page?: number;
 }
 
 export const postulantesService = {
+  // Lista completa (selects); para tablas usar listPage.
   async list(params: ListParams = {}): Promise<Postulante[]> {
     const { data } = await api.get<Paginated<Postulante>>(base, {
       params: { per_page: 100, ...params },
     });
     return data.data;
+  },
+  async listPage(params: ListParams = {}): Promise<Paginated<Postulante>> {
+    const { data } = await api.get<Paginated<Postulante>>(base, { params });
+    return data;
   },
   async get(documento: string): Promise<Postulante> {
     const { data } = await api.get<DataResponse<Postulante>>(`${base}/${documento}`);

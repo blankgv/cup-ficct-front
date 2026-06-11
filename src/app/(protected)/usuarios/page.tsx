@@ -4,7 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import { useFormErrors } from "@/hooks/useFormErrors";
 import * as usersService from "@/services/users.service";
 import { getErrorMessage } from "@/lib/api";
-import type { CreateUserPayload, UpdateUserPayload, User } from "@/lib/types";
+import type {
+  CreateUserPayload,
+  PaginationMeta,
+  UpdateUserPayload,
+  User,
+} from "@/lib/types";
 import { RequirePermission } from "@/components/RequirePermission";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Card, PageHeader } from "@/components/ui/Card";
@@ -12,6 +17,7 @@ import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Field, SelectInput, TextInput } from "@/components/ui/Field";
 import { Modal } from "@/components/ui/Modal";
+import { Pagination } from "@/components/ui/Pagination";
 import { Spinner } from "@/components/ui/Spinner";
 
 const ROLE_OPTIONS = ["ADMINISTRADOR", "COORDINADOR", "DOCENTE", "POSTULANTE"];
@@ -31,6 +37,8 @@ export default function UsuariosPage() {
 
 function UsuariosContent() {
   const [users, setUsers] = useState<User[]>([]);
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -47,15 +55,21 @@ function UsuariosContent() {
       const res = await usersService.listUsers({
         search: search || undefined,
         role: roleFilter || undefined,
-        per_page: 100,
+        page,
       });
+      // Si la página quedó vacía (ej. tras borrar el último registro), retroceder.
+      if (res.meta && page > res.meta.last_page) {
+        setPage(Math.max(1, res.meta.last_page));
+        return;
+      }
       setUsers(res.data);
+      setMeta(res.meta ?? null);
     } catch (error) {
       setLoadError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
-  }, [search, roleFilter]);
+  }, [search, roleFilter, page]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -87,12 +101,18 @@ function UsuariosContent() {
           <TextInput
             placeholder="Buscar por email o usuario…"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             className="max-w-xs"
           />
           <SelectInput
             value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
+            onChange={(e) => {
+              setRoleFilter(e.target.value);
+              setPage(1);
+            }}
             className="max-w-xs"
           >
             <option value="">Todos los roles</option>
@@ -168,6 +188,10 @@ function UsuariosContent() {
               </tbody>
             </table>
           </div>
+        )}
+
+        {!loading && meta && (
+          <Pagination meta={meta} onPageChange={setPage} disabled={loading} />
         )}
       </Card>
 

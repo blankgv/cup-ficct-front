@@ -7,6 +7,7 @@ import { Card, PageHeader } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
+import { Pagination } from "@/components/ui/Pagination";
 import { Spinner } from "@/components/ui/Spinner";
 import { Field, SelectInput } from "@/components/ui/Field";
 import { EstadoPagoBadge } from "@/components/payments/EstadoPagoBadge";
@@ -17,9 +18,12 @@ import { convocatoriasService } from "@/services/applicant/convocatorias.service
 import { postulantesService } from "@/services/applicant/postulantes.service";
 import { PAYMENT_MANAGE, type Pago } from "@/lib/payments";
 import type { Convocatoria, Postulante } from "@/lib/applicant";
+import type { PaginationMeta } from "@/lib/types";
 
 function PagosContent() {
   const [rows, setRows] = useState<Pago[]>([]);
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [convocatorias, setConvocatorias] = useState<Convocatoria[]>([]);
   const [postulantes, setPostulantes] = useState<Postulante[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,17 +46,24 @@ function PagosContent() {
   const load = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
-    const filter: PagosFilter = {};
+    const filter: PagosFilter = { page };
     if (fPostulante) filter.postulante = fPostulante;
     if (fConvocatoria) filter.convocatoria = Number(fConvocatoria);
     try {
-      setRows(await pagosService.list(filter));
+      const res = await pagosService.list(filter);
+      // Si la página quedó vacía (ej. tras borrar el último registro), retroceder.
+      if (res.meta && page > res.meta.last_page) {
+        setPage(Math.max(1, res.meta.last_page));
+        return;
+      }
+      setRows(res.data);
+      setMeta(res.meta ?? null);
     } catch (e) {
       setLoadError(getErrorMessage(e));
     } finally {
       setLoading(false);
     }
-  }, [fPostulante, fConvocatoria]);
+  }, [fPostulante, fConvocatoria, page]);
 
   useEffect(() => {
     convocatoriasService.list().then(setConvocatorias).catch(() => setConvocatorias([]));
@@ -91,7 +102,10 @@ function PagosContent() {
           <Field label="Postulante">
             <SelectInput
               value={fPostulante}
-              onChange={(e) => setFPostulante(e.target.value)}
+              onChange={(e) => {
+                setFPostulante(e.target.value);
+                setPage(1);
+              }}
             >
               <option value="">Todos</option>
               {postulantes.map((p) => (
@@ -104,7 +118,10 @@ function PagosContent() {
           <Field label="Convocatoria">
             <SelectInput
               value={fConvocatoria}
-              onChange={(e) => setFConvocatoria(e.target.value)}
+              onChange={(e) => {
+                setFConvocatoria(e.target.value);
+                setPage(1);
+              }}
             >
               <option value="">Todas</option>
               {convocatorias.map((c) => (
@@ -120,6 +137,7 @@ function PagosContent() {
               onClick={() => {
                 setFPostulante("");
                 setFConvocatoria("");
+                setPage(1);
               }}
             >
               Limpiar filtros
@@ -186,6 +204,10 @@ function PagosContent() {
               </tbody>
             </table>
           </div>
+        )}
+
+        {!loading && meta && (
+          <Pagination meta={meta} onPageChange={setPage} disabled={loading} />
         )}
       </Card>
 

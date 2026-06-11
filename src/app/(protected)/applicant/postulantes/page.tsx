@@ -64,7 +64,10 @@ function PostulantesContent() {
           { header: "Ciudad", render: (p) => p.ciudad },
           { header: "Colegio", render: (p) => p.colegio },
         ]}
-        fetchAll={() => postulantesService.list()}
+        fetchPage={(page, search) =>
+          postulantesService.listPage({ page, search: search || undefined })
+        }
+        searchPlaceholder="Buscar por documento o nombre…"
         emptyForm={EMPTY}
         toForm={(p) => ({
           documento: p.documento,

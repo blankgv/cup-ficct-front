@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useFormErrors } from "@/hooks/useFormErrors";
 import { getErrorMessage } from "@/lib/api";
 import type { Paginated, PaginationMeta } from "@/lib/types";
 import { Card, PageHeader } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
+import { TextInput } from "@/components/ui/Field";
 import { Modal } from "@/components/ui/Modal";
 import { Pagination } from "@/components/ui/Pagination";
 import { Spinner } from "@/components/ui/Spinner";
@@ -30,7 +31,9 @@ export interface EntityManagerProps<T, F> {
   rowKey: (row: T) => string | number;
   fetchAll?: () => Promise<T[]>;
   // Si se define, la tabla pagina en servidor e ignora fetchAll.
-  fetchPage?: (page: number) => Promise<Paginated<T>>;
+  fetchPage?: (page: number, search: string) => Promise<Paginated<T>>;
+  // Si se define (junto a fetchPage), muestra un buscador con búsqueda en servidor.
+  searchPlaceholder?: string;
   emptyForm: F;
   toForm: (row: T) => F;
   renderForm: (args: FormRenderArgs<F>) => ReactNode;
@@ -64,6 +67,7 @@ export function EntityManager<T, F>(props: EntityManagerProps<T, F>) {
     rowActions,
     toolbar,
     summary,
+    searchPlaceholder,
     createLabel = "Nuevo",
     emptyText = "No hay registros.",
   } = props;
@@ -71,6 +75,8 @@ export function EntityManager<T, F>(props: EntityManagerProps<T, F>) {
   const [rows, setRows] = useState<T[]>([]);
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -85,12 +91,19 @@ export function EntityManager<T, F>(props: EntityManagerProps<T, F>) {
 
   const { message, handle, reset, fieldError } = useFormErrors();
 
+  // Refs para no depender de la identidad de las funciones (suelen venir inline):
+  // evita recargas en cada render.
+  const fetchPageRef = useRef(fetchPage);
+  fetchPageRef.current = fetchPage;
+  const fetchAllRef = useRef(fetchAll);
+  fetchAllRef.current = fetchAll;
+
   const load = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
     try {
-      if (fetchPage) {
-        const res = await fetchPage(page);
+      if (fetchPageRef.current) {
+        const res = await fetchPageRef.current(page, debouncedSearch);
         // Si la página quedó vacía (ej. tras borrar el último registro), retroceder.
         if (res.meta && page > res.meta.last_page) {
           setPage(Math.max(1, res.meta.last_page));
@@ -98,19 +111,28 @@ export function EntityManager<T, F>(props: EntityManagerProps<T, F>) {
         }
         setRows(res.data);
         setMeta(res.meta ?? null);
-      } else if (fetchAll) {
-        setRows(await fetchAll());
+      } else if (fetchAllRef.current) {
+        setRows(await fetchAllRef.current());
       }
     } catch (error) {
       setLoadError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
-  }, [fetchAll, fetchPage, page]);
+  }, [page, debouncedSearch]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  // Espera a que el usuario deje de tipear y rearma desde la página 1.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const set = useCallback(
     <K extends keyof F>(key: K, value: F[K]) =>
@@ -171,7 +193,21 @@ export function EntityManager<T, F>(props: EntityManagerProps<T, F>) {
         actions={<Button onClick={openCreate}>{createLabel}</Button>}
       />
 
-      {toolbar && <Card className="mb-4">{toolbar}</Card>}
+      {(toolbar || searchPlaceholder) && (
+        <Card className="mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {searchPlaceholder && (
+              <TextInput
+                placeholder={searchPlaceholder}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="max-w-xs"
+              />
+            )}
+            {toolbar && <div className="flex-1">{toolbar}</div>}
+          </div>
+        </Card>
+      )}
 
       <Card className="p-0">
         {loadError && (

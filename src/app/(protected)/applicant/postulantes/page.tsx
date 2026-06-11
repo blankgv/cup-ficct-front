@@ -64,7 +64,7 @@ function PostulantesContent() {
           { header: "Ciudad", render: (p) => p.ciudad },
           { header: "Colegio", render: (p) => p.colegio },
         ]}
-        fetchAll={() => postulantesService.list()}
+        fetchPage={(page) => postulantesService.listPage({ page })}
         emptyForm={EMPTY}
         toForm={(p) => ({
           documento: p.documento,

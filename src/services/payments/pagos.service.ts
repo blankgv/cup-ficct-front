@@ -22,14 +22,13 @@ export interface PagosFilter {
   postulante?: string;
   convocatoria?: number;
   per_page?: number;
+  page?: number;
 }
 
 export const pagosService = {
-  async list(filter: PagosFilter = {}): Promise<Pago[]> {
-    const { data } = await api.get<Paginated<Pago>>(base, {
-      params: { per_page: 100, ...filter },
-    });
-    return data.data;
+  async list(filter: PagosFilter = {}): Promise<Paginated<Pago>> {
+    const { data } = await api.get<Paginated<Pago>>(base, { params: filter });
+    return data;
   },
   async get(id: number): Promise<Pago> {
     const { data } = await api.get<DataResponse<Pago>>(`${base}/${id}`);

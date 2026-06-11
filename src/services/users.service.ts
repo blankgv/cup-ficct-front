@@ -12,6 +12,7 @@ interface ListUsersParams {
   search?: string;
   role?: string;
   per_page?: number;
+  page?: number;
 }
 
 export async function listUsers(
